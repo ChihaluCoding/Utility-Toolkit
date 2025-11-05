@@ -3,12 +3,12 @@
 	"id": "building-support",
 	"version": "${version}",
 	"name": "Building Support",
-	"description": "Adds a Favorites tab to the creative inventory for quick access to frequently used blocks and items.",
+	"description": "/busp help でコマンド一覧を表示します。",
 	"authors": [
 		"chihalu"
 	],
 	"contact": {},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/building-support/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -17,6 +17,9 @@
 		],
 		"client": [
 			"chihalu.building.support.BuildingSupportClient"
+		],
+		"modmenu": [
+			"chihalu.building.support.BuildingSupportModMenuIntegration"
 		],
 		"fabric-datagen": [
 			"chihalu.building.support.BuildingSupportDataGenerator"

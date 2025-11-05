@@ -19,7 +19,7 @@ public final class CopperBuildingItems {
 
 	public static void populate(ItemGroup.Entries entries) {
 		for (ItemStack stack : COPPER_BLOCKS) {
-			entries.add(stack, ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
+			entries.add(stack.copy(), ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
 		}
 	}
 
@@ -30,6 +30,10 @@ public final class CopperBuildingItems {
 	private static List<ItemStack> buildCopperBlockList() {
 		List<ItemStack> stacks = new ArrayList<>();
 
+		stacks.add(new ItemStack(Items.RAW_COPPER));
+		stacks.add(new ItemStack(Items.COPPER_INGOT));
+		stacks.add(new ItemStack(Items.COPPER_ORE));
+		stacks.add(new ItemStack(Items.DEEPSLATE_COPPER_ORE));
 		stacks.add(new ItemStack(Items.RAW_COPPER_BLOCK));
 
 		// 酸化段階ごとの銅ブロックと派生ブロック
@@ -63,7 +67,13 @@ public final class CopperBuildingItems {
 		// その他銅系建材
 		stacks.add(new ItemStack(Items.LIGHTNING_ROD));
 		stacks.add(new ItemStack(Items.CHISELED_COPPER));
+		stacks.add(new ItemStack(Items.EXPOSED_CHISELED_COPPER));
+		stacks.add(new ItemStack(Items.WEATHERED_CHISELED_COPPER));
+		stacks.add(new ItemStack(Items.OXIDIZED_CHISELED_COPPER));
 		stacks.add(new ItemStack(Items.WAXED_CHISELED_COPPER));
+		stacks.add(new ItemStack(Items.WAXED_EXPOSED_CHISELED_COPPER));
+		stacks.add(new ItemStack(Items.WAXED_WEATHERED_CHISELED_COPPER));
+		stacks.add(new ItemStack(Items.WAXED_OXIDIZED_CHISELED_COPPER));
 
 		return Collections.unmodifiableList(stacks);
 	}

@@ -19,7 +19,7 @@ public final class WoodBuildingItems {
 
 	public static void populate(ItemGroup.Entries entries) {
 		for (ItemStack stack : WOOD_BLOCKS) {
-			entries.add(stack, ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
+			entries.add(stack.copy(), ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
 		}
 	}
 

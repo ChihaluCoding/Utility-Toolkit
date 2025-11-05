@@ -1,12 +1,13 @@
 {
-	"required": true,
-	"package": "chihalu.building.support.mixin.client",
-	"compatibilityLevel": "JAVA_21",
-	"client": [
-		"HandledScreenAccessor",
-		"CreativeInventoryScreenInvoker"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": true,
+  "package": "chihalu.building.support.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "HandledScreenAccessor",
+    "CreativeInventoryScreenInvoker",
+    "MinecraftClientMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

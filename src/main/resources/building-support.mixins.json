@@ -2,7 +2,10 @@
 	"required": true,
 	"package": "chihalu.building.support.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"mixins": [],
+	"mixins": [
+		"IceBlockMixin",
+		"FrostedIceBlockMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	},

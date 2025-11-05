@@ -151,7 +151,7 @@ public final class FavoritesManager {
 		List<ItemStack> stacks = getDisplayStacksForTab();
 
 		for (ItemStack stack : stacks) {
-			entries.add(stack, ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
+			entries.add(stack.copy(), ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
 		}
 	}
 

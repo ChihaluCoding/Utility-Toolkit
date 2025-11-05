@@ -19,7 +19,7 @@ public final class StoneBuildingItems {
 
 	public static void populate(ItemGroup.Entries entries) {
 		for (ItemStack stack : STONE_BLOCKS) {
-			entries.add(stack, ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
+			entries.add(stack.copy(), ItemGroup.StackVisibility.PARENT_AND_SEARCH_TABS);
 		}
 	}
 
