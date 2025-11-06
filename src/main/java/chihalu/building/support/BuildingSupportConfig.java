@@ -30,6 +30,7 @@ public final class BuildingSupportConfig {
 	private boolean villageSpawnEnabled = false;
 	private HistoryDisplayMode historyDisplayMode = HistoryDisplayMode.PER_WORLD;
 	private VillageSpawnType villageSpawnType = VillageSpawnType.PLAINS;
+	private boolean pottedPlantPickPrefersPot = true;
 
 	private BuildingSupportConfig() {
 	}
@@ -51,6 +52,7 @@ public final class BuildingSupportConfig {
 				this.villageSpawnEnabled = data.villageSpawnEnabled;
 				this.historyDisplayMode = data.historyDisplayMode == null ? HistoryDisplayMode.PER_WORLD : data.historyDisplayMode;
 				this.villageSpawnType = VillageSpawnType.byId(data.villageSpawnType);
+				this.pottedPlantPickPrefersPot = data.pottedPlantPickPrefersPot;
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			getLogger().error("設定ファイルの読み込みに失敗しました: {}", configPath, exception);
@@ -60,7 +62,14 @@ public final class BuildingSupportConfig {
 	public synchronized void save() {
 		try {
 			Files.createDirectories(configPath.getParent());
-			SerializableData data = new SerializableData(preventIceMelting, autoLightCandles, villageSpawnEnabled, historyDisplayMode, villageSpawnType);
+			SerializableData data = new SerializableData(
+				preventIceMelting,
+				autoLightCandles,
+				villageSpawnEnabled,
+				historyDisplayMode,
+				villageSpawnType,
+				pottedPlantPickPrefersPot
+			);
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
 			}
@@ -130,6 +139,17 @@ public final class BuildingSupportConfig {
 		}
 	}
 
+	public synchronized boolean isPottedPlantPickPrefersPot() {
+		return pottedPlantPickPrefersPot;
+	}
+
+	public synchronized void setPottedPlantPickPrefersPot(boolean enabled) {
+		if (this.pottedPlantPickPrefersPot != enabled) {
+			this.pottedPlantPickPrefersPot = enabled;
+			save();
+		}
+	}
+
 	private Logger getLogger() {
 		return BuildingSupport.LOGGER;
 	}
@@ -140,13 +160,22 @@ public final class BuildingSupportConfig {
 		private HistoryDisplayMode historyDisplayMode;
 		private boolean villageSpawnEnabled;
 		private String villageSpawnType = VillageSpawnType.PLAINS.id();
+		private boolean pottedPlantPickPrefersPot = true;
 
-		private SerializableData(boolean preventIceMelting, boolean autoLightCandles, boolean villageSpawnEnabled, HistoryDisplayMode historyDisplayMode, VillageSpawnType villageSpawnType) {
+		private SerializableData(
+			boolean preventIceMelting,
+			boolean autoLightCandles,
+			boolean villageSpawnEnabled,
+			HistoryDisplayMode historyDisplayMode,
+			VillageSpawnType villageSpawnType,
+			boolean pottedPlantPickPrefersPot
+		) {
 			this.preventIceMelting = preventIceMelting;
 			this.autoLightCandles = autoLightCandles;
 			this.historyDisplayMode = historyDisplayMode;
 			this.villageSpawnEnabled = villageSpawnEnabled;
 			this.villageSpawnType = villageSpawnType == null ? VillageSpawnType.PLAINS.id() : villageSpawnType.id();
+			this.pottedPlantPickPrefersPot = pottedPlantPickPrefersPot;
 		}
 	}
 

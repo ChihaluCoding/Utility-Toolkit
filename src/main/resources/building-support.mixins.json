@@ -6,7 +6,8 @@
  "IceBlockMixin",
 		"FrostedIceBlockMixin",
 		"CandleBlockPlacementMixin",
-		"BlockItemPlacementMixin"
+		"BlockItemPlacementMixin",
+		"ServerPlayNetworkHandlerMixin"
  ],
  "injectors": {
   "defaultRequire": 1
