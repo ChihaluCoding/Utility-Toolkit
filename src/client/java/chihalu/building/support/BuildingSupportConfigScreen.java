@@ -17,6 +17,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		ROOT,
 		ENVIRONMENT,
 		AUTOMATION,
+		SPAWN,
 		INVENTORY_CONTROL
 	}
 
@@ -34,25 +35,30 @@ public class BuildingSupportConfigScreen extends Screen {
 		currentCategory = Category.ROOT;
 		clearScreen();
 		int centerX = width / 2;
-		int startY = height / 2 - 36;
+		int startY = height / 2 - 48;
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.environment"),
 			button -> openEnvironment())
-			.dimensions(centerX - 100, startY - 12, 200, 20)
+			.dimensions(centerX - 100, startY, 200, 20)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.automation"),
 			button -> openAutomation())
-			.dimensions(centerX - 100, startY + 12, 200, 20)
+			.dimensions(centerX - 100, startY + 24, 200, 20)
+			.build());
+
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.spawn"),
+			button -> openSpawn())
+			.dimensions(centerX - 100, startY + 48, 200, 20)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.inventory_control"),
 			button -> openInventoryControl())
-			.dimensions(centerX - 100, startY + 36, 200, 20)
+			.dimensions(centerX - 100, startY + 72, 200, 20)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> close())
-			.dimensions(centerX - 100, startY + 84, 200, 20)
+			.dimensions(centerX - 100, startY + 120, 200, 20)
 			.build());
 
 		setFocused(null);
@@ -111,6 +117,57 @@ public class BuildingSupportConfigScreen extends Screen {
 				openRoot();
 			})
 			.dimensions(centerX - 100, startY + 32, 200, 20)
+			.build());
+
+		setFocused(null);
+	}
+
+	private void openSpawn() {
+		currentCategory = Category.SPAWN;
+		clearScreen();
+		int centerX = width / 2;
+		int startY = height / 2 - 34;
+		var config = BuildingSupportConfig.getInstance();
+		@SuppressWarnings("unchecked")
+		CyclingButtonWidget<BuildingSupportConfig.VillageSpawnType>[] typeButtonHolder = new CyclingButtonWidget[1];
+
+		CyclingButtonWidget<Boolean> toggle = CyclingButtonWidget.onOffBuilder(config.isVillageSpawnEnabled())
+			.build(centerX - 100, startY, 200, 20,
+				Text.translatable("config.building-support.spawn.force_village"),
+				(button, value) -> {
+					BuildingSupportConfig.getInstance().setVillageSpawnEnabled(value);
+					CyclingButtonWidget<BuildingSupportConfig.VillageSpawnType> typeButton = typeButtonHolder[0];
+					if (typeButton != null) {
+						typeButton.active = value;
+					}
+					button.setFocused(false);
+					setFocused(null);
+				});
+		toggle.setFocused(false);
+		addDrawableChild(toggle);
+
+		CyclingButtonWidget<BuildingSupportConfig.VillageSpawnType> typeButton =
+			CyclingButtonWidget.<BuildingSupportConfig.VillageSpawnType>builder(type -> Text.translatable(type.translationKey()))
+				.values(BuildingSupportConfig.VillageSpawnType.values())
+				.initially(config.getVillageSpawnType())
+				.build(centerX - 100, startY + 24, 200, 20,
+					Text.translatable("config.building-support.spawn.village_biome"),
+					(button, value) -> {
+						BuildingSupportConfig.getInstance().setVillageSpawnType(value);
+						button.setFocused(false);
+						setFocused(null);
+					});
+		typeButton.active = config.isVillageSpawnEnabled();
+		typeButton.setFocused(false);
+		addDrawableChild(typeButton);
+		typeButtonHolder[0] = typeButton;
+
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"),
+			button -> {
+				setFocused(null);
+				openRoot();
+			})
+			.dimensions(centerX - 100, startY + 72, 200, 20)
 			.build());
 
 		setFocused(null);
@@ -177,6 +234,8 @@ public class BuildingSupportConfigScreen extends Screen {
 			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.environment"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.AUTOMATION) {
 			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.automation"), width / 2, 50, 0xFFFFFF);
+		} else if (currentCategory == Category.SPAWN) {
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.spawn"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.INVENTORY_CONTROL) {
 			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.inventory_control"), width / 2, 50, 0xFFFFFF);
 		}

@@ -44,6 +44,7 @@ public class BuildingSupport implements ModInitializer {
 		CommandPresetManager presetManager = CommandPresetManager.getInstance();
 		presetManager.reload();
 		HistoryManager.getInstance().initialize();
+		VillageSpawnManager.getInstance().initialize();
 		registerItemGroups(favoritesManager);
 		registerCommands(favoritesManager, presetManager);
 		registerEvents();
@@ -115,6 +116,8 @@ public class BuildingSupport implements ModInitializer {
 			FavoritesCommand.register(dispatcher, registryAccess, favoritesManager));
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			PresetCommand.register(dispatcher, presetManager));
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+			VillageCommand.register(dispatcher, registryAccess, VillageSpawnManager.getInstance()));
 	}
 
 	private void registerEvents() {
@@ -142,6 +145,7 @@ public class BuildingSupport implements ModInitializer {
 
 			return ActionResult.PASS;
 		});
+
 	}
 
 	private static void autoLightCandles(ServerWorld world, BlockPos pos) {

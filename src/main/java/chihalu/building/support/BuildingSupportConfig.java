@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -26,7 +27,9 @@ public final class BuildingSupportConfig {
 
 	private boolean preventIceMelting = false;
 	private boolean autoLightCandles = false;
+	private boolean villageSpawnEnabled = false;
 	private HistoryDisplayMode historyDisplayMode = HistoryDisplayMode.PER_WORLD;
+	private VillageSpawnType villageSpawnType = VillageSpawnType.PLAINS;
 
 	private BuildingSupportConfig() {
 	}
@@ -45,7 +48,9 @@ public final class BuildingSupportConfig {
 			if (data != null) {
 				this.preventIceMelting = data.preventIceMelting;
 				this.autoLightCandles = data.autoLightCandles;
+				this.villageSpawnEnabled = data.villageSpawnEnabled;
 				this.historyDisplayMode = data.historyDisplayMode == null ? HistoryDisplayMode.PER_WORLD : data.historyDisplayMode;
+				this.villageSpawnType = VillageSpawnType.byId(data.villageSpawnType);
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			getLogger().error("設定ファイルの読み込みに失敗しました: {}", configPath, exception);
@@ -55,7 +60,7 @@ public final class BuildingSupportConfig {
 	public synchronized void save() {
 		try {
 			Files.createDirectories(configPath.getParent());
-			SerializableData data = new SerializableData(preventIceMelting, autoLightCandles, historyDisplayMode);
+			SerializableData data = new SerializableData(preventIceMelting, autoLightCandles, villageSpawnEnabled, historyDisplayMode, villageSpawnType);
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
 			}
@@ -86,6 +91,17 @@ public final class BuildingSupportConfig {
 		}
 	}
 
+	public synchronized boolean isVillageSpawnEnabled() {
+		return villageSpawnEnabled;
+	}
+
+	public synchronized void setVillageSpawnEnabled(boolean enabled) {
+		if (this.villageSpawnEnabled != enabled) {
+			this.villageSpawnEnabled = enabled;
+			save();
+		}
+	}
+
 	public synchronized HistoryDisplayMode getHistoryDisplayMode() {
 		return historyDisplayMode;
 	}
@@ -100,6 +116,20 @@ public final class BuildingSupportConfig {
 		}
 	}
 
+	public synchronized VillageSpawnType getVillageSpawnType() {
+		return villageSpawnType;
+	}
+
+	public synchronized void setVillageSpawnType(VillageSpawnType type) {
+		if (type == null) {
+			return;
+		}
+		if (this.villageSpawnType != type) {
+			this.villageSpawnType = type;
+			save();
+		}
+	}
+
 	private Logger getLogger() {
 		return BuildingSupport.LOGGER;
 	}
@@ -108,11 +138,15 @@ public final class BuildingSupportConfig {
 		private boolean preventIceMelting;
 		private boolean autoLightCandles;
 		private HistoryDisplayMode historyDisplayMode;
+		private boolean villageSpawnEnabled;
+		private String villageSpawnType = VillageSpawnType.PLAINS.id();
 
-		private SerializableData(boolean preventIceMelting, boolean autoLightCandles, HistoryDisplayMode historyDisplayMode) {
+		private SerializableData(boolean preventIceMelting, boolean autoLightCandles, boolean villageSpawnEnabled, HistoryDisplayMode historyDisplayMode, VillageSpawnType villageSpawnType) {
 			this.preventIceMelting = preventIceMelting;
 			this.autoLightCandles = autoLightCandles;
 			this.historyDisplayMode = historyDisplayMode;
+			this.villageSpawnEnabled = villageSpawnEnabled;
+			this.villageSpawnType = villageSpawnType == null ? VillageSpawnType.PLAINS.id() : villageSpawnType.id();
 		}
 	}
 
@@ -128,6 +162,46 @@ public final class BuildingSupportConfig {
 
 		public String translationKey() {
 			return "config.building-support.history_display_mode." + suffix;
+		}
+	}
+
+	public enum VillageSpawnType {
+		PLAINS("plains", "village_plains"),
+		DESERT("desert", "village_desert"),
+		SAVANNA("savanna", "village_savanna"),
+		TAIGA("taiga", "village_taiga"),
+		SNOWY("snowy", "village_snowy");
+
+		private final String id;
+		private final String structurePath;
+
+		VillageSpawnType(String id, String structurePath) {
+			this.id = id;
+			this.structurePath = structurePath;
+		}
+
+		public String id() {
+			return id;
+		}
+
+		public String translationKey() {
+			return "config.building-support.spawn.village_biome." + id;
+		}
+
+		public Identifier structureId() {
+			return Identifier.of("minecraft", structurePath);
+		}
+
+		public static VillageSpawnType byId(String id) {
+			if (id == null || id.isBlank()) {
+				return PLAINS;
+			}
+			for (VillageSpawnType type : values()) {
+				if (type.id.equalsIgnoreCase(id.trim())) {
+					return type;
+				}
+			}
+			return PLAINS;
 		}
 	}
 }

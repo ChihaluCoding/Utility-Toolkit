@@ -165,11 +165,6 @@ public class BuildingSupportClient implements ClientModInitializer {
 		}
 	}
 
-	private void refreshHistoryTab(CreativeInventoryScreen screen) {
-		List<ItemStack> historyStacks = updateHistoryGroupStacks();
-		refreshHistoryTabIfSelected(screen, historyStacks);
-	}
-
 	private static List<ItemStack> updateHistoryGroupStacks() {
 		ItemGroup historyGroup = Registries.ITEM_GROUP.get(BuildingSupport.HISTORY_ITEM_GROUP_KEY);
 		List<ItemStack> historyStacks = HistoryManager.getInstance().getDisplayStacksForTab();
