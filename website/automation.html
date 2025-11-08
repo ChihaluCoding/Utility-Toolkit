@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>Building Support | 自動化モジュール</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<nav>
+		<div class="logo">BUILDING SUPPORT</div>
+		<a class="cta" href="../index.html">TOPへ戻る</a>
+	</nav>
+	<main>
+		<section class="hero">
+			<div>
+				<h1>自動化モジュール</h1>
+				<p class="hero-description">整地・壁伸ばし・装飾の繰り返し作業をマクロ化し、狙った形をズレなく構築します。</p>
+				<div class="download-btn-row">
+					<a class="download-btn" href="../building-support-latest.zip">Download</a>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>主な機能</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>連続配置アシスト</h2>
+					<ul>
+						<li>指定ブロックを最大128連続まで自動配置。</li>
+						<li>高さと方角をガイドラインで確認しながら調整。</li>
+						<li>段差検知で足場を自動追加し作業が途切れません。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>テンプレート展開</h2>
+					<ul>
+						<li>よく使う構造（柱・梁・窓枠など）をプリセット化。</li>
+						<li>JSONに保存されたテンプレートをホットバーから呼び出し。</li>
+						<li>1クリックでゴースト表示→確定の2段階で誤配置防止。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>リピートコマンド</h2>
+					<ul>
+						<li>「直線」「矩形」「階段」などの図形をUI上で指定。</li>
+						<li>充填／中空の切替や、ブロックIDの一括置換に対応。</li>
+						<li>タスクは履歴に残り、すぐに再実行できます。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>使い方</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>オートライン</h2>
+					<ol>
+						<li>始点ブロックに向いた状態でマクロキーを押す。</li>
+						<li>GUIで長さ・高さ・方向を設定しプレビューを確認。</li>
+						<li>確定すると、必要数がインベントリから消費されながら連続配置されます。</li>
+					</ol>
+				</div>
+				<div class="card">
+					<h2>テンプレ挿入</h2>
+					<ol>
+						<li>`/busp template save <名前>`で現在の構造物を登録。</li>
+						<li>再配置時はコマンドかGUI一覧から選択。</li>
+						<li>設置後にスナップ位置を±0.5ブロック刻みで調整可能。</li>
+					</ol>
+				</div>
+				<div class="card">
+					<h2>反復実行</h2>
+					<ol>
+						<li>コマンド `/busp repeat` で図形タイプを指定。</li>
+						<li>ブロックとサイズ、オフセットを設定し「Run」を押下。</li>
+						<li>完了後は結果ログと使用数量がチャットに表示されます。</li>
+					</ol>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>注意点</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>安全設定</h2>
+					<ul>
+						<li>ワールド保護系プラグインと併用する場合は範囲を確認。</li>
+						<li>ブロック不足時は自動停止し、消費した数を表示します。</li>
+						<li>大規模配置はテストワールドで事前確認がおすすめです。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<footer>
+			<p>&copy; Chihalu / Building Support Mod</p>
+		</footer>
+	</main>
+</body>
+</html>

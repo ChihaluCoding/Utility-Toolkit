@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>Building Support | コマンドリファレンス</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<nav>
+		<div class="logo">BUILDING SUPPORT</div>
+		<a class="cta" href="../index.html">TOPへ戻る</a>
+	</nav>
+	<main>
+		<section class="hero">
+			<div>
+				<h1>コマンドリファレンス</h1>
+				<p class="hero-description">建築支援向けの専用コマンドをまとめています。プリセット呼び出しや履歴参照をチャットから素早く実行。</p>
+				<div class="download-btn-row">
+					<a class="download-btn" href="../building-support-latest.zip">Download</a>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>主要コマンド</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>/busp preset</h2>
+					<ul>
+						<li> `/busp preset save <名前>`: 現在のホットバーを保存。</li>
+						<li> `/busp preset load <名前>`: 保存済みプリセットを呼び出し。</li>
+						<li> `/busp preset list`: 登録一覧をチャットに出力。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>/busp village</h2>
+					<ul>
+						<li>村の構造物を検索して座標を一覧化。</li>
+						<li> `/busp village next`: 最寄りを自動追尾。</li>
+						<li>経路の始点と終点をビーコン粒子で表示。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>/busp history</h2>
+					<ul>
+						<li>使用履歴タブと同じデータをチャットで閲覧。</li>
+						<li> `/busp history clear`: 全ワールド／ワールド別でリセット可能。</li>
+						<li> `/busp history pin <index>`: 履歴アイテムをお気に入りへ固定。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>便利なショートハンド</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>テンプレ管理</h2>
+					<ul>
+						<li>`/busp template save house-01` で構造登録。</li>
+						<li>`/busp template list --detail` で材料統計も表示。</li>
+						<li>`/busp template build house-01` で即配置を呼び出し。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>環境設定</h2>
+					<ul>
+						<li>`/busp config reload` でJSONを再読み込み。</li>
+						<li>`/busp config set favorites.limit 40` のようにCLI設定。</li>
+						<li>設定はGUIと同期され、即時反映されます。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>デバッグ</h2>
+					<ul>
+						<li>`/busp debug overlay on` でヒントラインを表示。</li>
+						<li>`/busp debug log` で最新の自動化ログを取得。</li>
+						<li>問題が起きた場合はこのログを添えて報告してください。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>権限とセキュリティ</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>Permission</h2>
+					<ul>
+						<li>サーバーでは `building-support.admin` 権限が必要。</li>
+						<li>PresetやHistoryのみを許可したい場合は細分化されたノードを利用。</li>
+						<li>危険コマンドはコンフィグで完全に無効化できます。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<footer>
+			<p>&copy; Chihalu / Building Support Mod</p>
+		</footer>
+	</main>
+</body>
+</html>

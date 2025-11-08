@@ -2,64 +2,70 @@
 <html lang="ja">
 <head>
 	<meta charset="UTF-8">
-	<title>Building Support 機能一覧</title>
+	<title>Chihalu Utility Mod</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="web site/style.css">
+	<link rel="stylesheet" href="website/style.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-	<div id="loader">
-		<div class="loader-frame">
-			<h4>Loading World...</h4>
-			<div class="progress-bar">
-				<div class="progress-fill"></div>
-			</div>
-		</div>
-		<div class="tips" data-tips='["夜はベッドで安全確保！","水バケツがあれば落下も安心。","シフトでブロック端から落ちないぞ！","村の鐘を鳴らすと皆が家に戻るよ。"]'>TIP: ...</div>
-	</div>
-	<div class="hud">
-		<div class="panel hearts"><span class="icons">❤❤❤❤❤❤❤❤❤❤</span></div>
-		<div class="panel hunger"><span class="icons">🍖🍖🍖🍖🍖🍖🍖🍖🍖🍖</span></div>
-		<div class="panel xp">Lv 27</div>
-	</div>
+	<nav>
+		<div class="logo">BUILDING SUPPORT</div>
+		<a class="cta" href="#modules">MODULES</a>
+	</nav>
 	<main>
-		<header>
-			<h1><span>Building Support</span> 機能カタログ</h1>
-			<p>ビルド作業をなめらかにするためのツールをカテゴリ別に紹介します。設定メニューやキーバインドと併せて、好きな遊び方にカスタマイズしてください。</p>
-		</header>
+		<section class="hero">
+			<div>
+				<h1>Chihalu Utility Mod</h1>
+				<p class="hero-description">Ver1.0.0 (Beta)</p>
+				<div class="download-btn-row">
+					<a class="download-btn" href="building-support-latest.zip">Download</a>
+				</div>
+			</div>
+</section>
 
-	<section>
-		<h2>機能アクセス</h2>
-		<div class="ui-panel">
-			<div class="slot-grid">
-				<a class="slot" href="web site/inventory.html">
-					<div class="label">Inventory</div>
-					<div class="description">お気に入り・履歴・建築タブを管理する機能一式。</div>
+		<section id="modules">
+			<h3>機能一覧</h3>
+			<div class="cards-columns">
+				<a class="card card-link" href="website/inventory.html">
+					<h2>インベントリ制御</h2>
+					<ul>
+						<li>Bキーでお気に入り登録、専用タブに即反映。</li>
+						<li>使用履歴タブが直近64件を記録し、ワールド別/全ワールドで切替。</li>
+						<li>木材/光源など建材カテゴリをカタログ化。</li>
+					</ul>
 				</a>
-				<a class="slot" href="web site/automation.html">
-					<div class="label">Automation</div>
-					<div class="description">ろうそく自動点灯や氷保護など建築補助の詳細。</div>
+				<a class="card card-link" href="website/automation.html">
+					<h2>自動化</h2>
+					<ul>
+						<li>ろうそくを設置した瞬間に自動点灯</li>
+					</ul>
 				</a>
-				<a class="slot" href="web site/commands.html">
-					<div class="label">Commands</div>
-					<div class="description">コマンドプリセットと村ワープの使いこなしガイド。</div>
+				<a class="card card-link" href="website/commands.html">
+					<h2>コマンド</h2>
+					<ul>
+						<li>/preset でコマンドショートカットを管理</li>
+						<li>/village で未訪問の村を検索・ワープ</li>
+					</ul>
 				</a>
 			</div>
-		</div>
-	</section>
+		</section>
 
-	<footer>
-		<p>&copy; Building Support Mod</p>
-	</footer>
-</main>
+		<section>
+			<h3>設定</h3>
+			<div class="cards-columns">
+				<a class="card card-link" href="website/settings.html">
+                    <h2>設定方法</h2>
+					<ul>
+						<li>Mod Menu から開き、氷溶解防止・自動点灯・履歴モードなどを切替</li>
+						<li>設定はリアルタイム保存、ワールド再読み込み不要</li>
+					</ul>
+                </a>
+			</div>
+		</section>
 
-<script>
-	const loader = document.getElementById("loader");
-	const tipBox = document.querySelector("#loader .tips");
-	const tipData = JSON.parse(tipBox.dataset.tips);
-	tipBox.textContent = "TIP: " + tipData[Math.floor(Math.random() * tipData.length)];
-	window.addEventListener("load", () => {
-		setTimeout(() => loader.classList.add("hidden"), 1500);
-	});
-</script>
+		<footer>
+			<p>&copy; Chihalu / Building Support Mod</p>
+		</footer>
+	</main>
 </body>
 </html>

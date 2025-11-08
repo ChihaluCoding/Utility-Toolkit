@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>Building Support | インベントリ拡張</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<nav>
+		<div class="logo">BUILDING SUPPORT</div>
+		<a class="cta" href="../index.html">TOPへ戻る</a>
+	</nav>
+	<main>
+		<section class="hero">
+			<div>
+				<h1>インベントリ拡張モジュール</h1>
+				<p class="hero-description">お気に入り・履歴・カテゴリ分けをひとつの画面で扱えるビルド支援ツールセットです。</p>
+				<div class="download-btn-row">
+					<a class="download-btn" href="../building-support-latest.zip">Download</a>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>主な機能</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>お気に入りタブ</h2>
+					<ul>
+						<li>Bキーで即登録・解除、表示順はドラッグで調整。</li>
+						<li>バー表記で残量が見えるので補充タイミングを逃さない。</li>
+						<li>ホイール操作だけでタブ切替が可能。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>使用履歴</h2>
+					<ul>
+						<li>直近64件の使用アイテムを自動保存。</li>
+						<li>全ワールド／ワールド個別の切替ボタンを常備。</li>
+						<li>履歴アイコンをクリックすると即座にピックアップ。</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h2>建材カテゴリー</h2>
+					<ul>
+						<li>木材・石材・光源などテーマ別にカタログ化。</li>
+						<li>同カテゴリの互換ブロックを並べて比較可能。</li>
+						<li>タグデータは`run/itemgroups/history`でJSON管理。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>使い方</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>お気に入り登録</h2>
+					<ol>
+						<li>インベントリを開き、登録したいアイテムにカーソルを合わせる。</li>
+						<li>Bキーを押してお気に入りタブへ追加。</li>
+						<li>並べ替えはドラッグ＆ドロップ、解除はもう一度Bキー。</li>
+					</ol>
+				</div>
+				<div class="card">
+					<h2>履歴ビュー</h2>
+					<ol>
+						<li>履歴タブを開くと、最新の64件が時系列で表示。</li>
+						<li>右上のトグルで全ワールド／現在のワールドを切替。</li>
+						<li>履歴カードをクリックでホットバーへ投入。</li>
+					</ol>
+				</div>
+				<div class="card">
+					<h2>カテゴリブラウズ</h2>
+					<ol>
+						<li>カテゴリ一覧から目的のジャンルを選択。</li>
+						<li>アイテム説明・クラフトレシピのショートカットを確認。</li>
+						<li>必要に応じてJSONを編集し、独自カテゴリを追加。</li>
+					</ol>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h3>設定関連</h3>
+			<div class="cards-columns">
+				<div class="card">
+					<h2>Config</h2>
+					<ul>
+						<li>Mod Menu > Building Support からGUI設定が開けます。</li>
+						<li>ホットキーや保存スロット数、履歴保持件数を調整可能。</li>
+						<li>設定は`.minecraft/config/building-support.json`に保存。</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<footer>
+			<p>&copy; Chihalu / Building Support Mod</p>
+		</footer>
+	</main>
+</body>
+</html>
