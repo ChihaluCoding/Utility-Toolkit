@@ -68,7 +68,7 @@ public final class PresetCommand {
 	private static int removePreset(CommandContext<ServerCommandSource> context, CommandPresetManager manager) {
 		Integer slot = parseSlot(StringArgumentType.getString(context, "slot"));
 		if (slot == null) {
-			context.getSource().sendFeedback(() -> Text.translatable("command.building-support.preset.invalid_slot"), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.utility-toolkit.preset.invalid_slot"), false);
 			return 0;
 		}
 		Text result = manager.removePreset(slot);
@@ -79,7 +79,7 @@ public final class PresetCommand {
 	private static int listPresets(ServerCommandSource source, CommandPresetManager manager) {
 		var presets = manager.getAllPresets();
 		if (presets.isEmpty()) {
-			source.sendFeedback(() -> Text.translatable("command.building-support.preset.list.empty"), false);
+			source.sendFeedback(() -> Text.translatable("command.utility-toolkit.preset.list.empty"), false);
 			return 0;
 		}
 		MutableText message = Text.empty();
@@ -89,29 +89,29 @@ public final class PresetCommand {
 			if (!first) {
 				message.append(Text.literal(", "));
 			}
-			message.append(Text.translatable("command.building-support.preset.list.entry", entry.getSlot(), display));
+			message.append(Text.translatable("command.utility-toolkit.preset.list.entry", entry.getSlot(), display));
 			first = false;
 		}
-		source.sendFeedback(() -> Text.translatable("command.building-support.preset.list", message), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.preset.list", message), false);
 		return presets.size();
 	}
 
 	private static int executePreset(CommandContext<ServerCommandSource> context, CommandPresetManager manager) throws CommandSyntaxException {
 		Integer slot = parseSlot(StringArgumentType.getString(context, "slot"));
 		if (slot == null) {
-			context.getSource().sendFeedback(() -> Text.translatable("command.building-support.preset.invalid_slot"), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.utility-toolkit.preset.invalid_slot"), false);
 			return 0;
 		}
 		CommandPresetManager.PresetEntry entry = manager.getPreset(slot);
 		if (entry == null) {
-			context.getSource().sendFeedback(() -> Text.translatable("command.building-support.preset.not_found", slot), false);
+			context.getSource().sendFeedback(() -> Text.translatable("command.utility-toolkit.preset.not_found", slot), false);
 			return 0;
 		}
 		String command = entry.getCommand();
 		var commandManager = context.getSource().getServer().getCommandManager();
 		commandManager.execute(commandManager.getDispatcher().parse(command, context.getSource()), command);
 		String display = entry.getDescription().isBlank() ? entry.getCommand() : entry.getDescription();
-		context.getSource().sendFeedback(() -> Text.translatable("command.building-support.preset.executed", slot, display), false);
+		context.getSource().sendFeedback(() -> Text.translatable("command.utility-toolkit.preset.executed", slot, display), false);
 		return 1;
 	}
 

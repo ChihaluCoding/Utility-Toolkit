@@ -1,15 +1,15 @@
 {
 	"schemaVersion": 1,
-	"id": "building-support",
+	"id": "utility-toolkit",
 	"version": "${version}",
-	"name": "Building Support",
-	"description": "ユーティリティーMod",
+	"name": "Utility Toolkit",
+	"description": "建築作業を多面的に補助するユーティリティMod",
 	"authors": [
 		"chihalu"
 	],
 	"contact": {},
 	"license": "MIT",
-	"icon": "assets/building-support/icon.png",
+	"icon": "assets/utility-toolkit/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -26,9 +26,9 @@
 		]
 	},
 	"mixins": [
-		"building-support.mixins.json",
+		"utility-toolkit.mixins.json",
 		{
-			"config": "building-support.client.mixins.json",
+			"config": "utility-toolkit.client.mixins.json",
 			"environment": "client"
 		}
 	],

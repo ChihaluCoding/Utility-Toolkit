@@ -43,7 +43,7 @@ public class BuildingSupportConfigScreen extends Screen {
 	}
 
 	public BuildingSupportConfigScreen(Screen parent) {
-		super(Text.translatable("config.building-support.title"));
+		super(Text.translatable("config.utility-toolkit.title"));
 		this.parent = parent;
 	}
 
@@ -59,27 +59,27 @@ public class BuildingSupportConfigScreen extends Screen {
 		int rightX = getRightColumnX();
 		int startY = height / 2 - ROW_SPACING * 2;
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.environment"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.environment"),
 			button -> openEnvironment())
 			.dimensions(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.automation"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.automation"),
 			button -> openAutomation())
 			.dimensions(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.pick_block_control"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.pick_block_control"),
 			button -> openPickBlockControl())
 			.dimensions(leftX, startY + ROW_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.spawn"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.spawn"),
 			button -> openSpawn())
 			.dimensions(rightX, startY + ROW_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.category.inventory_control"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.inventory_control"),
 			button -> openInventoryControl())
 			.dimensions(leftX, startY + ROW_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
@@ -100,7 +100,7 @@ public class BuildingSupportConfigScreen extends Screen {
 
 		CyclingButtonWidget<Boolean> potToggle = CyclingButtonWidget.onOffBuilder(config.isPottedPlantPickPrefersPot())
 			.build(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
-				Text.translatable("config.building-support.potted_pick_prefers_pot"),
+				Text.translatable("config.utility-toolkit.potted_pick_prefers_pot"),
 				(button, value) -> {
 					BuildingSupportConfig.getInstance().setPottedPlantPickPrefersPot(value);
 					button.setFocused(false);
@@ -109,7 +109,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		potToggle.setFocused(false);
 		addDrawableChild(potToggle);
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {
 				setFocused(null);
 				openRoot();
@@ -124,21 +124,34 @@ public class BuildingSupportConfigScreen extends Screen {
 		currentCategory = Category.ENVIRONMENT;
 		clearScreen();
 		int leftX = getLeftColumnX();
+		int rightX = getRightColumnX();
 		int startY = height / 2 - 10;
 		var config = BuildingSupportConfig.getInstance();
 
-		CyclingButtonWidget<Boolean> toggle = CyclingButtonWidget.onOffBuilder(config.isPreventIceMeltingEnabled())
+		CyclingButtonWidget<Boolean> iceToggle = CyclingButtonWidget.onOffBuilder(config.isPreventIceMeltingEnabled())
 			.build(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
-				Text.translatable("config.building-support.prevent_ice_melting"),
+				Text.translatable("config.utility-toolkit.prevent_ice_melting"),
 				(button, value) -> {
 					BuildingSupportConfig.getInstance().setPreventIceMeltingEnabled(value);
 					button.setFocused(false);
 					setFocused(null);
 				});
-		toggle.setFocused(false);
-		addDrawableChild(toggle);
+		iceToggle.setFocused(false);
+		addDrawableChild(iceToggle);
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"),
+		// 右列には火災拡大防止のトグルをまとめて配置する
+		CyclingButtonWidget<Boolean> fireSpreadToggle = CyclingButtonWidget.onOffBuilder(config.isHazardFireProtectionEnabled())
+			.build(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
+				Text.translatable("config.utility-toolkit.prevent_hazard_fire_spread"),
+				(button, value) -> {
+					BuildingSupportConfig.getInstance().setHazardFireProtectionEnabled(value);
+					button.setFocused(false);
+					setFocused(null);
+				});
+		fireSpreadToggle.setFocused(false);
+		addDrawableChild(fireSpreadToggle);
+
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {
 				setFocused(null);
 				openRoot();
@@ -158,7 +171,7 @@ public class BuildingSupportConfigScreen extends Screen {
 
 		CyclingButtonWidget<Boolean> toggle = CyclingButtonWidget.onOffBuilder(config.isAutoLightCandlesEnabled())
 			.build(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
-				Text.translatable("config.building-support.auto_light_candles"),
+				Text.translatable("config.utility-toolkit.auto_light_candles"),
 				(button, value) -> {
 					BuildingSupportConfig.getInstance().setAutoLightCandlesEnabled(value);
 					button.setFocused(false);
@@ -167,7 +180,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		toggle.setFocused(false);
 		addDrawableChild(toggle);
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {
 				setFocused(null);
 				openRoot();
@@ -188,7 +201,7 @@ public class BuildingSupportConfigScreen extends Screen {
 
 		CyclingButtonWidget<Boolean> toggle = CyclingButtonWidget.onOffBuilder(config.isVillageSpawnEnabled())
 			.build(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT,
-				Text.translatable("config.building-support.spawn.force_village"),
+				Text.translatable("config.utility-toolkit.spawn.force_village"),
 				(button, value) -> {
 					BuildingSupportConfig.getInstance().setVillageSpawnEnabled(value);
 					CyclingButtonWidget<BuildingSupportConfig.VillageSpawnType> typeButton = typeButtonHolder[0];
@@ -206,7 +219,7 @@ public class BuildingSupportConfigScreen extends Screen {
 				.values(BuildingSupportConfig.VillageSpawnType.values())
 				.initially(config.getVillageSpawnType())
 				.build(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT,
-					Text.translatable("config.building-support.spawn.village_biome"),
+					Text.translatable("config.utility-toolkit.spawn.village_biome"),
 					(button, value) -> {
 						BuildingSupportConfig.getInstance().setVillageSpawnType(value);
 						button.setFocused(false);
@@ -220,7 +233,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		layoutWidgetsCentered(spawnOptionButtons, 2); // スポーン設定のボタン群を2列中央配置で揃える
 		spawnOptionButtons.forEach(this::addDrawableChild);
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {
 				setFocused(null);
 				openRoot();
@@ -244,7 +257,7 @@ public class BuildingSupportConfigScreen extends Screen {
 				.values(BuildingSupportConfig.HistoryDisplayMode.values())
 				.initially(config.getHistoryDisplayMode())
 				.build(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
-					Text.translatable("config.building-support.history_display_mode"),
+					Text.translatable("config.utility-toolkit.history_display_mode"),
 					(button, value) -> {
 						BuildingSupportConfig.getInstance().setHistoryDisplayMode(value);
 						BuildingSupportClient.onHistoryModeChanged();
@@ -254,7 +267,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		modeButton.setFocused(false);
 		addDrawableChild(modeButton);
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.history_reset.button"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.history_reset.button"),
 			button -> {
 				if (client != null) {
 					client.setScreen(new HistoryResetScreen(this));
@@ -263,7 +276,7 @@ public class BuildingSupportConfigScreen extends Screen {
 			.dimensions(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.inventory_control.open_tab_list"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.open_tab_list"),
 			button -> {
 				setFocused(null);
 				openInventoryTabToggleList();
@@ -271,7 +284,7 @@ public class BuildingSupportConfigScreen extends Screen {
 			.dimensions(getCenterButtonX(), startY + ROW_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {
 				setFocused(null);
 				openRoot();
@@ -285,7 +298,7 @@ public class BuildingSupportConfigScreen extends Screen {
 	private void openInventoryTabToggleList() {
 		currentCategory = Category.INVENTORY_TAB_TOGGLE;
 		clearScreen();
-		tabToggleBreadcrumbText = Text.translatable("config.building-support.inventory_control.tab_path");
+		tabToggleBreadcrumbText = Text.translatable("config.utility-toolkit.inventory_control.tab_path");
 
 		List<CyclingButtonWidget<Boolean>> toggleWidgets = new ArrayList<>();
 		var config = BuildingSupportConfig.getInstance();
@@ -319,7 +332,7 @@ public class BuildingSupportConfigScreen extends Screen {
 			int allOnX = width / 2 - BUTTON_WIDTH - COLUMN_SPACING / 2;
 			int allOffX = width / 2 + COLUMN_SPACING / 2;
 
-			addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.inventory_control.toggle_all_on"),
+			addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.toggle_all_on"),
 				button -> {
 					setAllTabVisibility(true);
 					openInventoryTabToggleList();
@@ -327,7 +340,7 @@ public class BuildingSupportConfigScreen extends Screen {
 				.dimensions(allOnX, controlButtonY, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
 
-			addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.inventory_control.toggle_all_off"),
+			addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.toggle_all_off"),
 				button -> {
 					setAllTabVisibility(false);
 					openInventoryTabToggleList();
@@ -336,7 +349,7 @@ public class BuildingSupportConfigScreen extends Screen {
 				.build());
 		}
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.inventory_control.back_to_inventory"),
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.back_to_inventory"),
 			button -> {
 				setFocused(null);
 				openInventoryControl();
@@ -374,17 +387,17 @@ public class BuildingSupportConfigScreen extends Screen {
 		context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 20, 0xFFFFFF);
 
 		if (currentCategory == Category.ENVIRONMENT) {
-			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.environment"), width / 2, 50, 0xFFFFFF);
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.category.environment"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.AUTOMATION) {
-			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.automation"), width / 2, 50, 0xFFFFFF);
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.category.automation"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.PICK_BLOCK_CONTROL) {
-			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.pick_block_control"), width / 2, 50, 0xFFFFFF);
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.category.pick_block_control"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.SPAWN) {
-			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.spawn"), width / 2, 50, 0xFFFFFF);
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.category.spawn"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.INVENTORY_CONTROL) {
-			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.category.inventory_control"), width / 2, 50, 0xFFFFFF);
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.category.inventory_control"), width / 2, 50, 0xFFFFFF);
 		} else if (currentCategory == Category.INVENTORY_TAB_TOGGLE) {
-			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.building-support.inventory_control.tab_category"), width / 2, 50, 0xFFFFFF);
+			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.inventory_control.tab_category"), width / 2, 50, 0xFFFFFF);
 			if (tabToggleList != null && !tabToggleBreadcrumbText.getString().isBlank()) {
 				context.drawCenteredTextWithShadow(textRenderer, tabToggleBreadcrumbText, width / 2, tabToggleBreadcrumbY, 0xFFFFFF);
 			}

@@ -96,12 +96,12 @@ public final class InventoryTabVisibilityController {
 		if (!(client.currentScreen instanceof CreativeInventoryScreen screen)) {
 			return;
 		}
-		ItemGroup selected = CreativeInventoryScreenInvoker.building_support$getSelectedTab();
+		ItemGroup selected = CreativeInventoryScreenInvoker.utility_toolkit$getSelectedTab();
 		CreativeInventoryScreenInvoker invoker = (CreativeInventoryScreenInvoker) screen;
 		if (selected == null || HIDDEN_GROUPS.contains(selected)) {
-			invoker.building_support$setSelectedTab(ItemGroups.getDefaultTab());
+			invoker.utility_toolkit$setSelectedTab(ItemGroups.getDefaultTab());
 		} else {
-			invoker.building_support$setSelectedTab(selected);
+			invoker.utility_toolkit$setSelectedTab(selected);
 		}
 	}
 }

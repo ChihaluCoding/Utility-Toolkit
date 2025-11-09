@@ -24,7 +24,7 @@ public class HistoryResetScreen extends Screen {
 	private Text resultMessage;
 
 	public HistoryResetScreen(Screen parent) {
-		super(Text.translatable("config.building-support.history_reset.title"));
+		super(Text.translatable("config.utility-toolkit.history_reset.title"));
 		this.parent = parent;
 	}
 
@@ -46,7 +46,7 @@ public class HistoryResetScreen extends Screen {
 			.values(ResetTarget.values())
 			.initially(resetTarget)
 			.build(leftX, infoY, BUTTON_WIDTH, BUTTON_HEIGHT,
-				Text.translatable("config.building-support.history_reset.target"),
+				Text.translatable("config.utility-toolkit.history_reset.target"),
 				(button, value) -> {
 					resetTarget = value;
 					updateWorldStatusText();
@@ -57,12 +57,12 @@ public class HistoryResetScreen extends Screen {
 
 		updateWorldStatusText();
 
-		resetButton = ButtonWidget.builder(Text.translatable("config.building-support.history_reset.reset_button"), button -> performReset())
+		resetButton = ButtonWidget.builder(Text.translatable("config.utility-toolkit.history_reset.reset_button"), button -> performReset())
 			.dimensions(rightX, infoY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build();
 		addDrawableChild(resetButton);
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.building-support.back_to_categories"), button -> returnToParent())
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"), button -> returnToParent())
 			.dimensions(getCenterButtonX(), getBottomButtonY(), BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
@@ -72,10 +72,10 @@ public class HistoryResetScreen extends Screen {
 	private void updateWorldStatusText() {
 		if (resetTarget == ResetTarget.CURRENT_WORLD) {
 			if (BuildingSupportClient.hasActiveWorld()) {
-				worldStatusText = Text.translatable("config.building-support.history_reset.current_world",
+				worldStatusText = Text.translatable("config.utility-toolkit.history_reset.current_world",
 					BuildingSupportClient.getCurrentWorldKey());
 			} else {
-				worldStatusText = Text.translatable("config.building-support.history_reset.not_in_world");
+				worldStatusText = Text.translatable("config.utility-toolkit.history_reset.not_in_world");
 			}
 		} else {
 			worldStatusText = null;
@@ -96,18 +96,18 @@ public class HistoryResetScreen extends Screen {
 		boolean success;
 		if (resetTarget == ResetTarget.CURRENT_WORLD) {
 			if (!BuildingSupportClient.hasActiveWorld()) {
-				resultMessage = Text.translatable("config.building-support.history_reset.result.not_in_world");
+				resultMessage = Text.translatable("config.utility-toolkit.history_reset.result.not_in_world");
 				return;
 			}
 			success = HistoryManager.getInstance().resetActiveWorldHistory();
 			resultMessage = success
-				? Text.translatable("config.building-support.history_reset.result.world_success")
-				: Text.translatable("config.building-support.history_reset.result.failure");
+				? Text.translatable("config.utility-toolkit.history_reset.result.world_success")
+				: Text.translatable("config.utility-toolkit.history_reset.result.failure");
 		} else {
 			success = HistoryManager.getInstance().resetGlobalHistory();
 			resultMessage = success
-				? Text.translatable("config.building-support.history_reset.result.global_success")
-				: Text.translatable("config.building-support.history_reset.result.failure");
+				? Text.translatable("config.utility-toolkit.history_reset.result.global_success")
+				: Text.translatable("config.utility-toolkit.history_reset.result.failure");
 		}
 
 		if (success) {
@@ -161,8 +161,8 @@ public class HistoryResetScreen extends Screen {
 	}
 
 	private enum ResetTarget {
-		CURRENT_WORLD("config.building-support.history_reset.target.current"),
-		ALL_WORLD("config.building-support.history_reset.target.all");
+		CURRENT_WORLD("config.utility-toolkit.history_reset.target.current"),
+		ALL_WORLD("config.utility-toolkit.history_reset.target.all");
 
 		private final String translationKey;
 

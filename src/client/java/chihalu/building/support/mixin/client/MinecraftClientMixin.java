@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MinecraftClientMixin {
 	@Inject(method = "doItemPick", at = @At("TAIL"))
 	@SuppressWarnings("resource")
-	private void building_support$recordPickBlock(CallbackInfo ci) {
+	private void utility_toolkit$recordPickBlock(CallbackInfo ci) {
 		MinecraftClient client = (MinecraftClient) (Object) this;
 		if (client.player == null) {
 			return;

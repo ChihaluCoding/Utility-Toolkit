@@ -28,6 +28,7 @@ public final class BuildingSupportConfig {
 	private final Path configPath = BuildingSupportStorage.resolve("config.json");
 
 	private boolean preventIceMelting = false;
+	private boolean preventHazardFireSpread = false;
 	private boolean autoLightCandles = false;
 	private boolean villageSpawnEnabled = false;
 	private HistoryDisplayMode historyDisplayMode = HistoryDisplayMode.PER_WORLD;
@@ -52,6 +53,7 @@ public final class BuildingSupportConfig {
 			SerializableData data = gson.fromJson(reader, SerializableData.class);
 			if (data != null) {
 				this.preventIceMelting = data.preventIceMelting;
+				this.preventHazardFireSpread = data.preventHazardFireSpread;
 				this.autoLightCandles = data.autoLightCandles;
 				this.villageSpawnEnabled = data.villageSpawnEnabled;
 				this.historyDisplayMode = data.historyDisplayMode == null ? HistoryDisplayMode.PER_WORLD : data.historyDisplayMode;
@@ -69,6 +71,7 @@ public final class BuildingSupportConfig {
 			Files.createDirectories(configPath.getParent());
 			SerializableData data = new SerializableData(
 				preventIceMelting,
+				preventHazardFireSpread,
 				autoLightCandles,
 				villageSpawnEnabled,
 				historyDisplayMode,
@@ -91,6 +94,23 @@ public final class BuildingSupportConfig {
 	public synchronized void setPreventIceMeltingEnabled(boolean enabled) {
 		if (this.preventIceMelting != enabled) {
 			this.preventIceMelting = enabled;
+			save();
+		}
+	}
+
+	/**
+	 * 焚火やマグマ由来の延焼を抑止するかどうかを取得する。
+	 */
+	public synchronized boolean isHazardFireProtectionEnabled() {
+		return preventHazardFireSpread;
+	}
+
+	/**
+	 * 焚火やマグマ由来の延焼抑止フラグを更新する。
+	 */
+	public synchronized void setHazardFireProtectionEnabled(boolean enabled) {
+		if (this.preventHazardFireSpread != enabled) {
+			this.preventHazardFireSpread = enabled;
 			save();
 		}
 	}
@@ -174,6 +194,7 @@ public final class BuildingSupportConfig {
 
 	private static final class SerializableData {
 		private boolean preventIceMelting;
+		private boolean preventHazardFireSpread;
 		private boolean autoLightCandles;
 		private boolean villageSpawnEnabled;
 		private HistoryDisplayMode historyDisplayMode;
@@ -183,6 +204,7 @@ public final class BuildingSupportConfig {
 
 		private SerializableData(
 			boolean preventIceMelting,
+			boolean preventHazardFireSpread,
 			boolean autoLightCandles,
 			boolean villageSpawnEnabled,
 			HistoryDisplayMode historyDisplayMode,
@@ -191,6 +213,7 @@ public final class BuildingSupportConfig {
 			Map<String, Boolean> itemGroupVisibility
 		) {
 			this.preventIceMelting = preventIceMelting;
+			this.preventHazardFireSpread = preventHazardFireSpread;
 			this.autoLightCandles = autoLightCandles;
 			this.villageSpawnEnabled = villageSpawnEnabled;
 			this.historyDisplayMode = historyDisplayMode;
@@ -240,7 +263,7 @@ public final class BuildingSupportConfig {
 		}
 
 		public String translationKey() {
-			return "config.building-support.history_display_mode." + suffix;
+			return "config.utility-toolkit.history_display_mode." + suffix;
 		}
 	}
 
@@ -264,7 +287,7 @@ public final class BuildingSupportConfig {
 		}
 
 		public String translationKey() {
-			return "config.building-support.spawn.village_biome." + id;
+			return "config.utility-toolkit.spawn.village_biome." + id;
 		}
 
 		public Identifier structureId() {
@@ -285,21 +308,21 @@ public final class BuildingSupportConfig {
 	}
 
 	public enum ItemGroupOption {
-		FAVORITES("favorites_tab", "config.building-support.inventory_tab.favorites"),
-		HISTORY("history_tab", "config.building-support.inventory_tab.history"),
-		WOOD_BUILDING("wood_building_tab", "config.building-support.inventory_tab.wood_building"),
-		STONE_BUILDING("stone_building_tab", "config.building-support.inventory_tab.stone_building"),
-		COPPER_BUILDING("copper_building_tab", "config.building-support.inventory_tab.copper_building"),
-		LIGHT_BUILDING("light_building_tab", "config.building-support.inventory_tab.light_building"),
-		NETHER_BUILDING("nether_building_tab", "config.building-support.inventory_tab.nether_building"),
-		END_BUILDING("end_building_tab", "config.building-support.inventory_tab.end_building"),
-		SIGN_SHELF("sign_shelf_tab", "config.building-support.inventory_tab.sign_shelf"),
-		ARMOR_LEATHER("armor_leather_tab", "config.building-support.inventory_tab.armor_leather"),
-		ARMOR_CHAIN("armor_chain_tab", "config.building-support.inventory_tab.armor_chain"),
-		ARMOR_IRON("armor_iron_tab", "config.building-support.inventory_tab.armor_iron"),
-		ARMOR_GOLD("armor_gold_tab", "config.building-support.inventory_tab.armor_gold"),
-		ARMOR_DIAMOND("armor_diamond_tab", "config.building-support.inventory_tab.armor_diamond"),
-		ARMOR_NETHERITE("armor_netherite_tab", "config.building-support.inventory_tab.armor_netherite");
+		FAVORITES("favorites_tab", "config.utility-toolkit.inventory_tab.favorites"),
+		HISTORY("history_tab", "config.utility-toolkit.inventory_tab.history"),
+		WOOD_BUILDING("wood_building_tab", "config.utility-toolkit.inventory_tab.wood_building"),
+		STONE_BUILDING("stone_building_tab", "config.utility-toolkit.inventory_tab.stone_building"),
+		COPPER_BUILDING("copper_building_tab", "config.utility-toolkit.inventory_tab.copper_building"),
+		LIGHT_BUILDING("light_building_tab", "config.utility-toolkit.inventory_tab.light_building"),
+		NETHER_BUILDING("nether_building_tab", "config.utility-toolkit.inventory_tab.nether_building"),
+		END_BUILDING("end_building_tab", "config.utility-toolkit.inventory_tab.end_building"),
+		SIGN_SHELF("sign_shelf_tab", "config.utility-toolkit.inventory_tab.sign_shelf"),
+		ARMOR_LEATHER("armor_leather_tab", "config.utility-toolkit.inventory_tab.armor_leather"),
+		ARMOR_CHAIN("armor_chain_tab", "config.utility-toolkit.inventory_tab.armor_chain"),
+		ARMOR_IRON("armor_iron_tab", "config.utility-toolkit.inventory_tab.armor_iron"),
+		ARMOR_GOLD("armor_gold_tab", "config.utility-toolkit.inventory_tab.armor_gold"),
+		ARMOR_DIAMOND("armor_diamond_tab", "config.utility-toolkit.inventory_tab.armor_diamond"),
+		ARMOR_NETHERITE("armor_netherite_tab", "config.utility-toolkit.inventory_tab.armor_netherite");
 
 		private final String id;
 		private final String translationKey;

@@ -81,28 +81,28 @@ public final class CommandPresetManager {
 
 	public synchronized Text addPreset(int slot, String command, String description) {
 		if (slot <= 0) {
-			return Text.translatable("command.building-support.preset.invalid_slot");
+			return Text.translatable("command.utility-toolkit.preset.invalid_slot");
 		}
 
 		String sanitizedCommand = sanitizeCommand(command);
 		if (sanitizedCommand.isBlank()) {
-			return Text.translatable("command.building-support.preset.invalid_command");
+			return Text.translatable("command.utility-toolkit.preset.invalid_command");
 		}
 
 		PresetEntry entry = new PresetEntry(slot, sanitizedCommand, normalizeDescription(description));
 		presets.put(slot, entry);
 		save();
-		return Text.translatable("command.building-support.preset.added", slot, entry.preview());
+		return Text.translatable("command.utility-toolkit.preset.added", slot, entry.preview());
 	}
 
 	public synchronized Text removePreset(int slot) {
 		PresetEntry removed = presets.remove(slot);
 		if (removed == null) {
-			return Text.translatable("command.building-support.preset.not_found", slot);
+			return Text.translatable("command.utility-toolkit.preset.not_found", slot);
 		}
 
 		save();
-		return Text.translatable("command.building-support.preset.removed", slot);
+		return Text.translatable("command.utility-toolkit.preset.removed", slot);
 	}
 
 	public synchronized PresetEntry getPreset(int slot) {

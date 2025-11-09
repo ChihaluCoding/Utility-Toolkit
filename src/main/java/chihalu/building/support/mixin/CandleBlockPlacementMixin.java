@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(CandleBlock.class)
 public abstract class CandleBlockPlacementMixin {
 	@Inject(method = "getPlacementState", at = @At("RETURN"), cancellable = true)
-	private void building_support$autoLightPlacement(ItemPlacementContext ctx, CallbackInfoReturnable<BlockState> cir) {
+	private void utility_toolkit$autoLightPlacement(ItemPlacementContext ctx, CallbackInfoReturnable<BlockState> cir) {
 		if (!BuildingSupportConfig.getInstance().isAutoLightCandlesEnabled()) {
 			return;
 		}

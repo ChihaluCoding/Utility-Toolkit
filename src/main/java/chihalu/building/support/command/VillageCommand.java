@@ -55,7 +55,7 @@ public final class VillageCommand {
 		VillageVisitTracker tracker = VillageVisitTracker.get(world);
 		Optional<VillageSpawnManager.VillageLocation> location = villageSpawnManager.findNthNearestVillage(world, player.getBlockPos(), type, 1, DEFAULT_NEW_VILLAGE_DISTANCE);
 		if (location.isEmpty()) {
-			source.sendFeedback(() -> Text.translatable("command.building-support.village.not_found"), false);
+			source.sendFeedback(() -> Text.translatable("command.utility-toolkit.village.not_found"), false);
 			return 0;
 		}
 
@@ -81,13 +81,13 @@ public final class VillageCommand {
 			return performTeleport(source, player, world, type, location, tracker);
 		}
 
-		source.sendFeedback(() -> Text.translatable("command.building-support.village.no_new"), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.village.no_new"), false);
 		return 0;
 	}
 
 	private boolean isOverworld(ServerWorld world, ServerCommandSource source) {
 		if (!world.getRegistryKey().equals(World.OVERWORLD)) {
-			source.sendFeedback(() -> Text.translatable("command.building-support.village.overworld_only"), false);
+			source.sendFeedback(() -> Text.translatable("command.utility-toolkit.village.overworld_only"), false);
 			return false;
 		}
 		return true;
@@ -114,7 +114,7 @@ public final class VillageCommand {
 		tracker.markVisited(player.getUuid(), world, type, location);
 
 		source.sendFeedback(() -> Text.translatable(
-			"command.building-support.village.teleported",
+			"command.utility-toolkit.village.teleported",
 			Text.translatable(type.translationKey()),
 			pos.getX(),
 			pos.getY(),

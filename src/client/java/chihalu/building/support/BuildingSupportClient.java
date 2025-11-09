@@ -49,7 +49,7 @@ public class BuildingSupportClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		toggleFavoriteKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-			"key.building-support.add_favorite",
+			"key.utility-toolkit.add_favorite",
 			InputUtil.Type.KEYSYM,
 			GLFW.GLFW_KEY_B,
 			FAVORITE_CATEGORY
@@ -64,7 +64,7 @@ public class BuildingSupportClient implements ClientModInitializer {
 
 					if (!(currentScreen instanceof CreativeInventoryScreen creativeScreen)) {
 						if (client.player != null) {
-							client.player.sendMessage(Text.translatable("message.building-support.favorite.require_creative"), false);
+							client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.require_creative"), false);
 						}
 						return;
 					}
@@ -103,14 +103,14 @@ public class BuildingSupportClient implements ClientModInitializer {
 		BuildingSupportConfig config = BuildingSupportConfig.getInstance();
 		if (!config.isItemGroupEnabled(ItemGroupOption.FAVORITES)) {
 			if (client.player != null) {
-				client.player.sendMessage(Text.translatable("message.building-support.favorite.tab_disabled"), false);
+				client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.tab_disabled"), false);
 			}
 			return;
 		}
 
-		Slot slot = ((HandledScreenAccessor) screen).building_support$getFocusedSlot();
+		Slot slot = ((HandledScreenAccessor) screen).utility_toolkit$getFocusedSlot();
 		if (slot == null || !slot.hasStack()) {
-			client.player.sendMessage(Text.translatable("message.building-support.favorite.no_item"), false);
+			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.no_item"), false);
 			return;
 		}
 
@@ -121,18 +121,18 @@ public class BuildingSupportClient implements ClientModInitializer {
 		Text itemText = stack.toHoverableText();
 
 		if (added) {
-			client.player.sendMessage(Text.translatable("message.building-support.favorite.added", itemText).formatted(Formatting.GREEN), false);
+			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.added", itemText).formatted(Formatting.GREEN), false);
 		} else {
-			client.player.sendMessage(Text.translatable("message.building-support.favorite.removed", itemText).formatted(Formatting.YELLOW), false);
+			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.removed", itemText).formatted(Formatting.YELLOW), false);
 		}
 
 		ItemGroup favoritesGroup = Registries.ITEM_GROUP.get(BuildingSupport.FAVORITES_ITEM_GROUP_KEY);
 		var favoritesStacks = manager.getDisplayStacksForTab();
 		replaceGroupStacks(favoritesGroup, favoritesStacks);
 
-		ItemGroup currentTab = CreativeInventoryScreenInvoker.building_support$getSelectedTab();
+		ItemGroup currentTab = CreativeInventoryScreenInvoker.utility_toolkit$getSelectedTab();
 		if (currentTab == favoritesGroup) {
-			((CreativeInventoryScreenInvoker) screen).building_support$refreshSelectedTab(favoritesStacks);
+			((CreativeInventoryScreenInvoker) screen).utility_toolkit$refreshSelectedTab(favoritesStacks);
 		}
 	}
 
@@ -183,9 +183,9 @@ public class BuildingSupportClient implements ClientModInitializer {
 			return;
 		}
 		ItemGroup historyGroup = Registries.ITEM_GROUP.get(BuildingSupport.HISTORY_ITEM_GROUP_KEY);
-		ItemGroup currentTab = CreativeInventoryScreenInvoker.building_support$getSelectedTab();
+		ItemGroup currentTab = CreativeInventoryScreenInvoker.utility_toolkit$getSelectedTab();
 		if (currentTab == historyGroup) {
-			((CreativeInventoryScreenInvoker) screen).building_support$refreshSelectedTab(historyStacks);
+			((CreativeInventoryScreenInvoker) screen).utility_toolkit$refreshSelectedTab(historyStacks);
 		}
 	}
 

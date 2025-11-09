@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(CreativeInventoryScreen.class)
 public interface CreativeInventoryScreenInvoker {
 	@Invoker("setSelectedTab")
-	void building_support$setSelectedTab(ItemGroup group);
+	void utility_toolkit$setSelectedTab(ItemGroup group);
 
 	@Invoker("refreshSelectedTab")
-	void building_support$refreshSelectedTab(Collection<ItemStack> stacks);
+	void utility_toolkit$refreshSelectedTab(Collection<ItemStack> stacks);
 
 	@Accessor("selectedTab")
-	static ItemGroup building_support$getSelectedTab() {
+	static ItemGroup utility_toolkit$getSelectedTab() {
 		throw new AssertionError();
 	}
 }

@@ -5,6 +5,7 @@
  "mixins": [
  "IceBlockMixin",
 		"FrostedIceBlockMixin",
+		"FireBlockMixin",
 		"CandleBlockPlacementMixin",
 		"BlockItemPlacementMixin",
 		"ServerPlayNetworkHandlerMixin",

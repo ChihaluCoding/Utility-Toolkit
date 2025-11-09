@@ -33,7 +33,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
 	protected abstract void onPickItem(ItemStack stack);
 
 	@Inject(method = "onPickItemFromBlock", at = @At("HEAD"), cancellable = true)
-	private void building_support$adjustPottedPlantPick(PickItemFromBlockC2SPacket packet, CallbackInfo ci) {
+	private void utility_toolkit$adjustPottedPlantPick(PickItemFromBlockC2SPacket packet, CallbackInfo ci) {
 		if (!BuildingSupportConfig.getInstance().isPottedPlantPickPrefersPot()) {
 			return;
 		}

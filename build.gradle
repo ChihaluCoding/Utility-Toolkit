@@ -20,7 +20,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"building-support" {
+		"utility-toolkit" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

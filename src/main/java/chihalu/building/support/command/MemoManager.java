@@ -79,27 +79,27 @@ public final class MemoManager {
 		String sanitizedCommand = sanitizeCommand(command);
 		String normalizedNote = normalizeNote(note);
 		if (sanitizedCommand.isBlank()) {
-			return Text.translatable("command.building-support.memo.invalid_command").formatted(Formatting.RED);
+			return Text.translatable("command.utility-toolkit.memo.invalid_command").formatted(Formatting.RED);
 		}
 		if (normalizedNote.isBlank()) {
-			return Text.translatable("command.building-support.memo.invalid_note").formatted(Formatting.RED);
+			return Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED);
 		}
 		memos.put(noteKey(normalizedNote), new MemoEntry(sanitizedCommand, normalizedNote));
 		save();
-		return Text.translatable("command.building-support.memo.added", normalizedNote).formatted(Formatting.GREEN);
+		return Text.translatable("command.utility-toolkit.memo.added", normalizedNote).formatted(Formatting.GREEN);
 	}
 
 	public synchronized Text removeMemo(String note) {
 		String normalizedNote = normalizeNote(note);
 		if (normalizedNote.isBlank()) {
-			return Text.translatable("command.building-support.memo.invalid_note").formatted(Formatting.RED);
+			return Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED);
 		}
 		MemoEntry removed = memos.remove(noteKey(normalizedNote));
 		if (removed == null) {
-			return Text.translatable("command.building-support.memo.not_found", normalizedNote).formatted(Formatting.RED);
+			return Text.translatable("command.utility-toolkit.memo.not_found", normalizedNote).formatted(Formatting.RED);
 		}
 		save();
-		return Text.translatable("command.building-support.memo.removed", normalizedNote).formatted(Formatting.YELLOW);
+		return Text.translatable("command.utility-toolkit.memo.removed", normalizedNote).formatted(Formatting.YELLOW);
 	}
 
 	public synchronized List<MemoEntry> getAllMemos() {
@@ -117,19 +117,19 @@ public final class MemoManager {
 	public synchronized MemoEditResult editMemo(String note, String newCommand, String newNote) {
 		String normalizedNote = normalizeNote(note);
 		if (normalizedNote.isBlank()) {
-			return MemoEditResult.failure(Text.translatable("command.building-support.memo.invalid_note").formatted(Formatting.RED));
+			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED));
 		}
 		MemoEntry existing = memos.get(noteKey(normalizedNote));
 		if (existing == null) {
-			return MemoEditResult.failure(Text.translatable("command.building-support.memo.not_found", normalizedNote).formatted(Formatting.RED));
+			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.not_found", normalizedNote).formatted(Formatting.RED));
 		}
 		String commandToSave = newCommand == null || newCommand.isBlank() ? existing.getCommand() : sanitizeCommand(newCommand);
 		String noteToSave = newNote == null || newNote.isBlank() ? existing.getNote() : normalizeNote(newNote);
 		if (commandToSave.isBlank()) {
-			return MemoEditResult.failure(Text.translatable("command.building-support.memo.invalid_command").formatted(Formatting.RED));
+			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.invalid_command").formatted(Formatting.RED));
 		}
 		if (noteToSave.isBlank()) {
-			return MemoEditResult.failure(Text.translatable("command.building-support.memo.invalid_note").formatted(Formatting.RED));
+			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED));
 		}
 		if (!noteKey(existing.getNote()).equals(noteKey(noteToSave))) {
 			memos.remove(noteKey(existing.getNote()));
@@ -137,7 +137,7 @@ public final class MemoManager {
 		MemoEntry updated = new MemoEntry(commandToSave, noteToSave);
 		memos.put(noteKey(noteToSave), updated);
 		save();
-		return MemoEditResult.success(Text.translatable("command.building-support.memo.edited", noteToSave).formatted(Formatting.GREEN), existing, updated);
+		return MemoEditResult.success(Text.translatable("command.utility-toolkit.memo.edited", noteToSave).formatted(Formatting.GREEN), existing, updated);
 	}
 
 	private static String sanitizeCommand(String command) {

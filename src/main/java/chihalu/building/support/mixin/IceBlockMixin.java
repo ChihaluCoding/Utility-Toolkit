@@ -16,21 +16,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(IceBlock.class)
 public abstract class IceBlockMixin {
 	@Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
-	private void building_support$preventRandomTickMelting(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
+	private void utility_toolkit$preventRandomTickMelting(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
 		if (BuildingSupportConfig.getInstance().isPreventIceMeltingEnabled()) {
 			ci.cancel();
 		}
 	}
 
 	@Inject(method = "melt", at = @At("HEAD"), cancellable = true)
-	private void building_support$preventMelt(BlockState state, World world, BlockPos pos, CallbackInfo ci) {
+	private void utility_toolkit$preventMelt(BlockState state, World world, BlockPos pos, CallbackInfo ci) {
 		if (BuildingSupportConfig.getInstance().isPreventIceMeltingEnabled()) {
 			ci.cancel();
 		}
 	}
 
 	@Redirect(method = "afterBreak", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z"))
-	private boolean building_support$skipWaterOnBreak(World world, BlockPos pos, BlockState state) {
+	private boolean utility_toolkit$skipWaterOnBreak(World world, BlockPos pos, BlockState state) {
 		if (BuildingSupportConfig.getInstance().isPreventIceMeltingEnabled()) {
 			return false;
 		}

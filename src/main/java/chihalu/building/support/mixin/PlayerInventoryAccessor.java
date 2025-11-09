@@ -7,5 +7,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(PlayerInventory.class)
 public interface PlayerInventoryAccessor {
 	@Accessor("selectedSlot")
-	int building_support$getSelectedSlot();
+	int utility_toolkit$getSelectedSlot();
 }

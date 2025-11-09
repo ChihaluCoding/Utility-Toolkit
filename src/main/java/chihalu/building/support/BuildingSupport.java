@@ -44,7 +44,7 @@ import chihalu.building.support.itemgroup.WoodBuildingItems;
 import chihalu.building.support.village.VillageSpawnManager;
 
 public class BuildingSupport implements ModInitializer {
-	public static final String MOD_ID = "building-support";
+	public static final String MOD_ID = "utility-toolkit";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final RegistryKey<ItemGroup> FAVORITES_ITEM_GROUP_KEY = RegistryKey.of(RegistryKeys.ITEM_GROUP, id("a_favorites"));
 	public static final RegistryKey<ItemGroup> WOOD_BUILDING_ITEM_GROUP_KEY = RegistryKey.of(RegistryKeys.ITEM_GROUP, id("b_wood_building"));
@@ -78,112 +78,112 @@ public class BuildingSupport implements ModInitializer {
 		registerItemGroups(favoritesManager);
 		registerCommands(presetManager);
 		registerEvents();
-		LOGGER.info("Building Support mod initialized");
+		LOGGER.info("Utility Toolkit mod initialized");
 	}
 
 	private void registerItemGroups(FavoritesManager manager) {
 		HistoryManager historyManager = HistoryManager.getInstance();
 			Registry.register(Registries.ITEM_GROUP, FAVORITES_ITEM_GROUP_KEY,
 				FabricItemGroup.builder()
-					.displayName(Text.translatable("itemGroup.building-support.favorites"))
+					.displayName(Text.translatable("itemGroup.utility-toolkit.favorites"))
 					.icon(() -> new ItemStack(Blocks.AMETHYST_CLUSTER))
 					.entries((displayContext, entries) -> manager.populate(entries))
 					.build());
 
 			Registry.register(Registries.ITEM_GROUP, HISTORY_ITEM_GROUP_KEY,
 				FabricItemGroup.builder()
-					.displayName(Text.translatable("itemGroup.building-support.history_building"))
+					.displayName(Text.translatable("itemGroup.utility-toolkit.history_building"))
 					.icon(() -> new ItemStack(Items.BOOK))
 					.entries((displayContext, entries) -> historyManager.populate(entries))
 					.build());
 
 		Registry.register(Registries.ITEM_GROUP, WOOD_BUILDING_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.wood_building"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.wood_building"))
 				.icon(WoodBuildingItems::getIconStack)
 				.entries((displayContext, entries) -> WoodBuildingItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, STONE_BUILDING_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.stone_building"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.stone_building"))
 				.icon(StoneBuildingItems::getIconStack)
 				.entries((displayContext, entries) -> StoneBuildingItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, COPPER_BUILDING_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.copper_building"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.copper_building"))
 				.icon(CopperBuildingItems::getIconStack)
 				.entries((displayContext, entries) -> CopperBuildingItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, NETHER_BUILDING_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.nether_building"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.nether_building"))
 				.icon(NetherBuildingItems::getIconStack)
 				.entries((displayContext, entries) -> NetherBuildingItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, LIGHT_BUILDING_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.light_building"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.light_building"))
 				.icon(LightBuildingItems::getIconStack)
 				.entries((displayContext, entries) -> LightBuildingItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, END_BUILDING_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.end_building"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.end_building"))
 				.icon(EndBuildingItems::getIconStack)
 				.entries((displayContext, entries) -> EndBuildingItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, SIGN_SHELF_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.sign_shelf"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.sign_shelf"))
 				.icon(SignShelfItems::getIconStack)
 				.entries((displayContext, entries) -> SignShelfItems.populate(entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, LEATHER_EQUIPMENT_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.equipment.leather"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.equipment.leather"))
 				.icon(() -> TrimmedArmorItems.createIcon(Items.LEATHER_CHESTPLATE))
 				.entries((displayContext, entries) -> TrimmedArmorItems.populateLeather(displayContext, entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, CHAIN_EQUIPMENT_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.equipment.chain"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.equipment.chain"))
 				.icon(() -> TrimmedArmorItems.createIcon(Items.CHAINMAIL_CHESTPLATE))
 				.entries((displayContext, entries) -> TrimmedArmorItems.populateChainmail(displayContext, entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, IRON_EQUIPMENT_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.equipment.iron"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.equipment.iron"))
 				.icon(() -> TrimmedArmorItems.createIcon(Items.IRON_CHESTPLATE))
 				.entries((displayContext, entries) -> TrimmedArmorItems.populateIron(displayContext, entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, GOLD_EQUIPMENT_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.equipment.gold"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.equipment.gold"))
 				.icon(() -> TrimmedArmorItems.createIcon(Items.GOLDEN_CHESTPLATE))
 				.entries((displayContext, entries) -> TrimmedArmorItems.populateGold(displayContext, entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, DIAMOND_EQUIPMENT_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.equipment.diamond"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.equipment.diamond"))
 				.icon(() -> TrimmedArmorItems.createIcon(Items.DIAMOND_CHESTPLATE))
 				.entries((displayContext, entries) -> TrimmedArmorItems.populateDiamond(displayContext, entries))
 				.build());
 
 		Registry.register(Registries.ITEM_GROUP, NETHERITE_EQUIPMENT_ITEM_GROUP_KEY,
 			FabricItemGroup.builder()
-				.displayName(Text.translatable("itemGroup.building-support.equipment.netherite"))
+				.displayName(Text.translatable("itemGroup.utility-toolkit.equipment.netherite"))
 				.icon(() -> TrimmedArmorItems.createIcon(Items.NETHERITE_CHESTPLATE))
 				.entries((displayContext, entries) -> TrimmedArmorItems.populateNetherite(displayContext, entries))
 				.build());

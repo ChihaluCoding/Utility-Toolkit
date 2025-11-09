@@ -48,7 +48,7 @@ public final class MemoCommand {
 	private static int addMemo(CommandContext<ServerCommandSource> context, MemoManager manager) {
 		ParsedInput input = ParsedInput.parse(StringArgumentType.getString(context, "command"));
 		if (!input.hasNote()) {
-			return sendFeedback(context.getSource(), Text.translatable("command.building-support.memo.invalid_note").formatted(Formatting.RED));
+			return sendFeedback(context.getSource(), Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED));
 		}
 		Text result = manager.addMemo(input.command(), input.note());
 		return sendFeedback(context.getSource(), result);
@@ -64,7 +64,7 @@ public final class MemoCommand {
 		String raw = StringArgumentType.getString(context, "payload");
 		ParsedInput input = ParsedInput.parse(raw);
 		if (!input.hasNote()) {
-			return sendFeedback(context.getSource(), Text.translatable("command.building-support.memo.invalid_note").formatted(Formatting.RED));
+			return sendFeedback(context.getSource(), Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED));
 		}
 		if (input.command().isBlank()) {
 			return beginEdit(context.getSource(), manager, input.note());
@@ -75,11 +75,11 @@ public final class MemoCommand {
 	private static int beginEdit(ServerCommandSource source, MemoManager manager, String note) {
 		MemoManager.MemoEntry entry = manager.getMemo(note);
 		if (entry == null) {
-			return sendFeedback(source, Text.translatable("command.building-support.memo.not_found", note).formatted(Formatting.RED));
+			return sendFeedback(source, Text.translatable("command.utility-toolkit.memo.not_found", note).formatted(Formatting.RED));
 		}
 		ServerPlayerEntity player = getPlayer(source);
 		if (player == null) {
-			return sendFeedback(source, Text.translatable("command.building-support.memo.edit.no_session").formatted(Formatting.RED));
+			return sendFeedback(source, Text.translatable("command.utility-toolkit.memo.edit.no_session").formatted(Formatting.RED));
 		}
 		EDIT_SESSIONS.put(player.getUuid(), entry.getNote());
 		sendEditPrompt(source, entry);
@@ -89,18 +89,18 @@ public final class MemoCommand {
 	private static int applyEdit(ServerCommandSource source, MemoManager manager, String note, String command) {
 		ServerPlayerEntity player = getPlayer(source);
 		if (player == null) {
-			return sendFeedback(source, Text.translatable("command.building-support.memo.edit.no_session").formatted(Formatting.RED));
+			return sendFeedback(source, Text.translatable("command.utility-toolkit.memo.edit.no_session").formatted(Formatting.RED));
 		}
 		String sessionNote = EDIT_SESSIONS.get(player.getUuid());
 		if (sessionNote == null) {
-			return sendFeedback(source, Text.translatable("command.building-support.memo.edit.no_session").formatted(Formatting.RED));
+			return sendFeedback(source, Text.translatable("command.utility-toolkit.memo.edit.no_session").formatted(Formatting.RED));
 		}
 		String newNote = note;
 		MemoManager.MemoEditResult result = manager.editMemo(sessionNote, command, newNote);
 		sendFeedback(source, result.feedback());
 		if (result.before() != null && result.after() != null) {
-			Text before = Text.translatable("command.building-support.memo.edit.before", result.before().getCommand(), result.before().getNote()).formatted(Formatting.BLUE);
-			Text after = Text.translatable("command.building-support.memo.edit.after", result.after().getCommand(), result.after().getNote()).formatted(Formatting.AQUA);
+			Text before = Text.translatable("command.utility-toolkit.memo.edit.before", result.before().getCommand(), result.before().getNote()).formatted(Formatting.BLUE);
+			Text after = Text.translatable("command.utility-toolkit.memo.edit.after", result.after().getCommand(), result.after().getNote()).formatted(Formatting.AQUA);
 			source.sendFeedback(() -> before, false);
 			source.sendFeedback(() -> after, false);
 			EDIT_SESSIONS.remove(player.getUuid());
@@ -113,10 +113,10 @@ public final class MemoCommand {
 	private static int listMemos(ServerCommandSource source, MemoManager manager) {
 		var memos = manager.getAllMemos();
 		if (memos.isEmpty()) {
-			source.sendFeedback(() -> Text.translatable("command.building-support.memo.list.empty"), false);
+			source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.list.empty"), false);
 			return 0;
 		}
-		source.sendFeedback(() -> Text.translatable("command.building-support.memo.list.header"), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.list.header"), false);
 		for (MemoManager.MemoEntry entry : memos) {
 			String fullCommand = "/" + entry.getCommand();
 			MutableText line = Text.literal("- ")
@@ -127,7 +127,7 @@ public final class MemoCommand {
 						.withColor(Formatting.AQUA)
 						.withUnderline(true)
 						.withClickEvent(new CopyToClipboard(fullCommand))
-						.withHoverEvent(new ShowText(Text.translatable("command.building-support.memo.list.copy_hint")))));
+						.withHoverEvent(new ShowText(Text.translatable("command.utility-toolkit.memo.list.copy_hint")))));
 			source.sendFeedback(() -> line, false);
 		}
 		return memos.size();
@@ -205,11 +205,11 @@ public final class MemoCommand {
 				.withColor(Formatting.AQUA)
 				.withUnderline(true)
 				.withClickEvent(new CopyToClipboard(fullCommand))
-				.withHoverEvent(new ShowText(Text.translatable("command.building-support.memo.list.copy_hint"))));
-		source.sendFeedback(() -> Text.translatable("command.building-support.memo.edit.begin", entry.getNote()).formatted(Formatting.GOLD), false);
-		source.sendFeedback(() -> Text.translatable("command.building-support.memo.edit.current_command").append(commandText).formatted(Formatting.WHITE), false);
-		source.sendFeedback(() -> Text.translatable("command.building-support.memo.edit.current_note", entry.getNote()).formatted(Formatting.WHITE), false);
-		source.sendFeedback(() -> Text.translatable("command.building-support.memo.edit.help", entry.getNote()).formatted(Formatting.YELLOW), false);
+				.withHoverEvent(new ShowText(Text.translatable("command.utility-toolkit.memo.list.copy_hint"))));
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.begin", entry.getNote()).formatted(Formatting.GOLD), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.current_command").append(commandText).formatted(Formatting.WHITE), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.current_note", entry.getNote()).formatted(Formatting.WHITE), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.help", entry.getNote()).formatted(Formatting.YELLOW), false);
 	}
 
 	private static ServerPlayerEntity getPlayer(ServerCommandSource source) {
