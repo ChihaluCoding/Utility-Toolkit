@@ -21,6 +21,7 @@ import java.util.Map;
 
 import chihalu.building.support.BuildingSupport;
 import chihalu.building.support.BuildingSupportStorage;
+import chihalu.building.support.config.BuildingSupportConfig;
 
 public final class MemoManager {
 	private static final MemoManager INSTANCE = new MemoManager();
@@ -47,16 +48,20 @@ public final class MemoManager {
 			if (file == null || file.memos == null) {
 				return;
 			}
+			if (file.style != null) {
+				BuildingSupportConfig.getInstance().setMemoListStyle(file.style);
+			}
 			for (MemoEntry entry : file.memos) {
-				if (entry == null || entry.command == null || entry.note == null) {
+				if (entry == null || entry.note == null) {
 					continue;
 				}
 				String sanitizedCommand = sanitizeCommand(entry.command);
 				String note = normalizeNote(entry.note);
-				if (sanitizedCommand.isBlank() || note.isBlank()) {
+				String details = normalizeDetails(entry.details);
+				if (note.isBlank() || (sanitizedCommand.isBlank() && details.isBlank())) {
 					continue;
 				}
-				memos.put(noteKey(note), new MemoEntry(sanitizedCommand, note));
+				memos.put(noteKey(note), new MemoEntry(sanitizedCommand, note, details));
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			BuildingSupport.LOGGER.error("メモファイルの読み込みに失敗しました: {}", configPath, exception);
@@ -75,16 +80,17 @@ public final class MemoManager {
 		}
 	}
 
-	public synchronized Text addMemo(String command, String note) {
+	public synchronized Text addMemo(String command, String note, String details) {
 		String sanitizedCommand = sanitizeCommand(command);
 		String normalizedNote = normalizeNote(note);
-		if (sanitizedCommand.isBlank()) {
-			return Text.translatable("command.utility-toolkit.memo.invalid_command").formatted(Formatting.RED);
-		}
+		String normalizedDetails = normalizeDetails(details);
 		if (normalizedNote.isBlank()) {
 			return Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED);
 		}
-		memos.put(noteKey(normalizedNote), new MemoEntry(sanitizedCommand, normalizedNote));
+		if (sanitizedCommand.isBlank() && normalizedDetails.isBlank()) {
+			return Text.translatable("command.utility-toolkit.memo.invalid_content").formatted(Formatting.RED);
+		}
+		memos.put(noteKey(normalizedNote), new MemoEntry(sanitizedCommand, normalizedNote, normalizedDetails));
 		save();
 		return Text.translatable("command.utility-toolkit.memo.added", normalizedNote).formatted(Formatting.GREEN);
 	}
@@ -123,21 +129,33 @@ public final class MemoManager {
 		if (existing == null) {
 			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.not_found", normalizedNote).formatted(Formatting.RED));
 		}
-		String commandToSave = newCommand == null || newCommand.isBlank() ? existing.getCommand() : sanitizeCommand(newCommand);
+		String commandToSave = newCommand == null ? existing.getCommand() : sanitizeCommand(newCommand);
 		String noteToSave = newNote == null || newNote.isBlank() ? existing.getNote() : normalizeNote(newNote);
-		if (commandToSave.isBlank()) {
-			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.invalid_command").formatted(Formatting.RED));
-		}
+		String detailsToSave = existing.getDetails();
 		if (noteToSave.isBlank()) {
 			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED));
 		}
 		if (!noteKey(existing.getNote()).equals(noteKey(noteToSave))) {
 			memos.remove(noteKey(existing.getNote()));
 		}
-		MemoEntry updated = new MemoEntry(commandToSave, noteToSave);
+		if (commandToSave.isBlank() && detailsToSave.isBlank()) {
+			return MemoEditResult.failure(Text.translatable("command.utility-toolkit.memo.invalid_content").formatted(Formatting.RED));
+		}
+		MemoEntry updated = new MemoEntry(commandToSave, noteToSave, detailsToSave);
 		memos.put(noteKey(noteToSave), updated);
 		save();
 		return MemoEditResult.success(Text.translatable("command.utility-toolkit.memo.edited", noteToSave).formatted(Formatting.GREEN), existing, updated);
+	}
+
+	public synchronized int getListStyle() {
+		return BuildingSupportConfig.getInstance().getMemoListStyle();
+	}
+
+	public synchronized Text setListStyle(int style) {
+		boolean changed = BuildingSupportConfig.getInstance().setMemoListStyle(style);
+		int current = BuildingSupportConfig.getInstance().getMemoListStyle();
+		return Text.translatable("command.utility-toolkit.memo.style.set", current)
+			.formatted(changed ? Formatting.GREEN : Formatting.YELLOW);
 	}
 
 	private static String sanitizeCommand(String command) {
@@ -155,12 +173,23 @@ public final class MemoManager {
 		return note == null ? "" : note.trim();
 	}
 
+	private static String normalizeDetails(String details) {
+		if (details == null) {
+			return "";
+		}
+		String normalized = details.trim()
+			.replace("\r\n", "\n")
+			.replace("\r", "\n");
+		return normalized.replace("<br>", "\n");
+	}
+
 	private static String noteKey(String note) {
 		return note.toLowerCase(Locale.ROOT);
 	}
 
 	private static final class MemoFile {
 		private List<MemoEntry> memos;
+		private Integer style;
 
 		private MemoFile(List<MemoEntry> memos) {
 			this.memos = memos;
@@ -170,10 +199,12 @@ public final class MemoManager {
 	public static final class MemoEntry {
 		private final String command;
 		private final String note;
+		private final String details;
 
-		public MemoEntry(String command, String note) {
+		public MemoEntry(String command, String note, String details) {
 			this.command = command;
 			this.note = note;
+			this.details = details;
 		}
 
 		public String getCommand() {
@@ -182,6 +213,10 @@ public final class MemoManager {
 
 		public String getNote() {
 			return note;
+		}
+
+		public String getDetails() {
+			return details;
 		}
 	}
 

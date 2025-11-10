@@ -58,6 +58,11 @@ public class BuildingSupportClient implements ClientModInitializer {
 			ScreenKeyboardEvents.beforeKeyPress(screen).register(new ScreenKeyboardEvents.BeforeKeyPress() {
 				@Override
 				public void beforeKeyPress(net.minecraft.client.gui.screen.Screen currentScreen, KeyInput input) {
+					if (currentScreen instanceof CreativeInventoryScreen creativeScreen && input.isCopy()) {
+						handleCopyItemIdShortcut(client, creativeScreen);
+						return;
+					}
+
 					if (!toggleFavoriteKey.matchesKey(input)) {
 						return;
 					}
@@ -97,6 +102,34 @@ public class BuildingSupportClient implements ClientModInitializer {
 
 		InventoryTabVisibilityController.reloadFromConfig();
 
+	}
+
+	private void handleCopyItemIdShortcut(MinecraftClient client, CreativeInventoryScreen screen) {
+		// Ctrl + C でコピー要求が来た際に対象スロットを確認する
+		Slot slot = ((HandledScreenAccessor) screen).utility_toolkit$getFocusedSlot();
+		if (slot == null || !slot.hasStack()) {
+			if (client.player != null) {
+				client.player.sendMessage(Text.translatable("message.utility-toolkit.copy_item_id.no_item"), false);
+			}
+			return;
+		}
+
+		// 実際の ItemStack から登録名を解決してクリップボードへ書き込む
+		ItemStack stack = slot.getStack();
+		Identifier id = Registries.ITEM.getId(stack.getItem());
+		if (client.keyboard != null) {
+			client.keyboard.setClipboard(id.toString());
+		}
+
+		// メッセージ上ではID部分を紫色にして視認性を向上させる
+		Text idText = Text.literal("(" + id.toString() + ")").formatted(Formatting.LIGHT_PURPLE);
+		if (client.player != null) {
+			client.player.sendMessage(
+				Text.translatable("message.utility-toolkit.copy_item_id.success", idText)
+					.formatted(Formatting.GREEN),
+				false
+			);
+		}
 	}
 
 	private void handleToggleFavorite(MinecraftClient client, CreativeInventoryScreen screen) {

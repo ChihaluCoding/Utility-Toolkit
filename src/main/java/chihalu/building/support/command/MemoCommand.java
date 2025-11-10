@@ -1,6 +1,7 @@
 package chihalu.building.support.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestion;
@@ -15,6 +16,9 @@ import net.minecraft.text.Text;
 import net.minecraft.text.HoverEvent.ShowText;
 import net.minecraft.util.Formatting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class MemoCommand {
+	private static final String NO_CONTENT_TRANSLATION_KEY = "command.utility-toolkit.memo.no_content_label";
 	private static final Map<UUID, String> EDIT_SESSIONS = new ConcurrentHashMap<>();
 	private static boolean cleanupRegistered = false;
 
@@ -45,7 +50,16 @@ public final class MemoCommand {
 					.suggests((context, builder) -> suggestEditPayload(dispatcher, memoManager, context, builder))
 					.executes(context -> editMemo(context, memoManager))))
 			.then(CommandManager.literal("list")
-				.executes(context -> listMemos(context.getSource(), memoManager))));
+				.executes(context -> listMemos(context.getSource(), memoManager, false))
+				.then(CommandManager.literal("cmd")
+					.executes(context -> listMemos(context.getSource(), memoManager, true))))
+			.then(CommandManager.literal("style")
+				.then(CommandManager.argument("value", IntegerArgumentType.integer(1, 3))
+					.executes(context -> setStyle(
+						context.getSource(),
+						memoManager,
+						IntegerArgumentType.getInteger(context, "value")
+					)))));
 	}
 
 	/**
@@ -64,11 +78,25 @@ public final class MemoCommand {
 	}
 
 	private static int addMemo(CommandContext<ServerCommandSource> context, MemoManager manager) {
-		ParsedInput input = ParsedInput.parse(StringArgumentType.getString(context, "command"));
+		String raw = StringArgumentType.getString(context, "command");
+		String trimmed = raw.trim();
+		if (trimmed.startsWith("\"")) {
+			NoteMemoInput noteMemo = NoteMemoInput.parse(raw);
+			if (noteMemo == null) {
+				return sendFeedback(
+					context.getSource(),
+					Text.translatable("command.utility-toolkit.memo.add.invalid_format").formatted(Formatting.RED)
+				);
+			}
+			Text result = manager.addMemo("", noteMemo.note(), noteMemo.body());
+			return sendFeedback(context.getSource(), result);
+		}
+
+		ParsedInput input = ParsedInput.parse(raw);
 		if (!input.hasNote()) {
 			return sendFeedback(context.getSource(), Text.translatable("command.utility-toolkit.memo.invalid_note").formatted(Formatting.RED));
 		}
-		Text result = manager.addMemo(input.command(), input.note());
+		Text result = manager.addMemo(input.command(), input.note(), "");
 		return sendFeedback(context.getSource(), result);
 	}
 
@@ -117,8 +145,16 @@ public final class MemoCommand {
 		MemoManager.MemoEditResult result = manager.editMemo(sessionNote, command, newNote);
 		sendFeedback(source, result.feedback());
 		if (result.before() != null && result.after() != null) {
-			Text before = Text.translatable("command.utility-toolkit.memo.edit.before", result.before().getCommand(), result.before().getNote()).formatted(Formatting.BLUE);
-			Text after = Text.translatable("command.utility-toolkit.memo.edit.after", result.after().getCommand(), result.after().getNote()).formatted(Formatting.AQUA);
+			Text before = Text.translatable(
+				"command.utility-toolkit.memo.edit.before",
+				describeMemoContent(result.before()),
+				result.before().getNote()
+			).formatted(Formatting.BLUE);
+			Text after = Text.translatable(
+				"command.utility-toolkit.memo.edit.after",
+				describeMemoContent(result.after()),
+				result.after().getNote()
+			).formatted(Formatting.AQUA);
 			source.sendFeedback(() -> before, false);
 			source.sendFeedback(() -> after, false);
 			EDIT_SESSIONS.remove(player.getUuid());
@@ -128,27 +164,134 @@ public final class MemoCommand {
 		return 1;
 	}
 
-	private static int listMemos(ServerCommandSource source, MemoManager manager) {
-		var memos = manager.getAllMemos();
-		if (memos.isEmpty()) {
-			source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.list.empty"), false);
+	private static int listMemos(ServerCommandSource source, MemoManager manager, boolean commandOnly) {
+		List<MemoManager.MemoEntry> filtered = new ArrayList<>();
+		for (MemoManager.MemoEntry entry : manager.getAllMemos()) {
+			boolean isCommandMemo = !entry.getCommand().isBlank();
+			if (commandOnly == isCommandMemo) {
+				filtered.add(entry);
+			}
+		}
+		int style = manager.getListStyle();
+		String headerKey = commandOnly
+			? "command.utility-toolkit.memo.list.header.command"
+			: "command.utility-toolkit.memo.list.header";
+		source.sendFeedback(() -> Text.empty(), false);
+		source.sendFeedback(() -> Text.translatable(headerKey).formatted(Formatting.AQUA, Formatting.BOLD), false);
+		if (filtered.isEmpty()) {
+			String emptyKey = commandOnly
+				? "command.utility-toolkit.memo.list.empty.command"
+				: "command.utility-toolkit.memo.list.empty";
+			source.sendFeedback(() -> Text.translatable(emptyKey).formatted(Formatting.GRAY), false);
+			source.sendFeedback(() -> Text.empty(), false);
 			return 0;
 		}
-		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.list.header"), false);
-		for (MemoManager.MemoEntry entry : memos) {
-			String fullCommand = "/" + entry.getCommand();
-			MutableText line = Text.literal("- ")
-				.append(Text.literal(entry.getNote()).formatted(Formatting.YELLOW))
-				.append(Text.literal(" : "))
-				.append(Text.literal(fullCommand)
-					.styled(style -> style
-						.withColor(Formatting.AQUA)
-						.withUnderline(true)
-						.withClickEvent(new CopyToClipboard(fullCommand))
-						.withHoverEvent(new ShowText(Text.translatable("command.utility-toolkit.memo.list.copy_hint")))));
-			source.sendFeedback(() -> line, false);
+
+		for (MemoManager.MemoEntry entry : filtered) {
+			for (Text line : formatEntryLines(entry, style)) {
+				source.sendFeedback(() -> line, false);
+			}
+			source.sendFeedback(() -> Text.empty(), false);
 		}
-		return memos.size();
+		return filtered.size();
+	}
+
+	private static List<Text> formatEntryLines(MemoManager.MemoEntry entry, int style) {
+		List<Text> lines = new ArrayList<>();
+		boolean isCommandMemo = !entry.getCommand().isBlank();
+		if (isCommandMemo) {
+			MutableText content = createMemoContentDisplay(entry);
+			switch (style) {
+				case 2 -> lines.add(
+					Text.literal("　").formatted(Formatting.GRAY)
+						.append(Text.literal(entry.getNote()).formatted(Formatting.YELLOW))
+						.append(Text.literal("：").formatted(Formatting.GRAY))
+						.append(content)
+				);
+				case 3 -> {
+					lines.add(Text.literal("　").formatted(Formatting.GRAY)
+						.append(Text.literal(entry.getNote()).formatted(Formatting.YELLOW)));
+					lines.add(Text.literal("　　").formatted(Formatting.GRAY).append(content));
+				}
+				default -> lines.add(
+					Text.literal(" ・ ").formatted(Formatting.GRAY)
+						.append(Text.literal(entry.getNote()).formatted(Formatting.YELLOW))
+						.append(Text.literal("：").formatted(Formatting.GRAY))
+						.append(content)
+				);
+			}
+			return lines;
+		}
+
+		String[] detailLines = entry.getDetails().split("\\n", -1);
+		if (detailLines.length == 0) {
+			detailLines = new String[]{""};
+		}
+		boolean hasContent = Arrays.stream(detailLines).anyMatch(line -> !line.isEmpty());
+
+		switch (style) {
+			case 2 -> {
+				boolean separate = detailLines.length > 1;
+				MutableText header = Text.literal("　").formatted(Formatting.GRAY)
+					.append(Text.literal("「" + entry.getNote() + "」").formatted(Formatting.YELLOW))
+					.append(Text.literal("：").formatted(Formatting.GRAY));
+				if (!separate) {
+					header.append(formatDetailText(detailLines[0], !hasContent));
+					lines.add(header);
+				} else {
+					lines.add(header);
+					lines.add(Text.literal("　　").formatted(Formatting.GRAY)
+						.append(formatDetailText(detailLines[0], !hasContent)));
+					for (int i = 1; i < detailLines.length; i++) {
+						lines.add(Text.literal("　　").formatted(Formatting.GRAY)
+							.append(formatDetailText(detailLines[i], false)));
+					}
+				}
+			}
+			case 3 -> {
+				lines.add(Text.literal("　「").formatted(Formatting.GRAY)
+					.append(Text.literal(entry.getNote()).formatted(Formatting.YELLOW))
+					.append(Text.literal("」").formatted(Formatting.GRAY)));
+				for (int i = 0; i < detailLines.length; i++) {
+					lines.add(Text.literal("　　").formatted(Formatting.GRAY)
+						.append(formatDetailText(detailLines[i], !hasContent && i == 0)));
+				}
+			}
+			default -> {
+				boolean separate = detailLines.length > 1;
+				MutableText header = Text.literal(" ・").formatted(Formatting.GRAY)
+					.append(Text.literal(entry.getNote()).formatted(Formatting.YELLOW))
+					.append(Text.literal("：").formatted(Formatting.GRAY));
+				if (!separate) {
+					header.append(formatDetailText(detailLines[0], !hasContent));
+					lines.add(header);
+				} else {
+					lines.add(header);
+					lines.add(Text.literal("　　").formatted(Formatting.GRAY)
+						.append(formatDetailText(detailLines[0], !hasContent)));
+					for (int i = 1; i < detailLines.length; i++) {
+						lines.add(Text.literal("　　").formatted(Formatting.GRAY)
+							.append(formatDetailText(detailLines[i], false)));
+					}
+				}
+			}
+		}
+		return lines;
+	}
+
+	private static MutableText formatDetailText(String detail, boolean allowPlaceholder) {
+		if (detail == null || detail.isEmpty()) {
+			if (allowPlaceholder) {
+				return Text.translatable(NO_CONTENT_TRANSLATION_KEY).formatted(Formatting.DARK_GRAY);
+			}
+			return Text.literal("");
+		}
+		return Text.literal(detail).formatted(Formatting.WHITE);
+	}
+
+	private static int setStyle(ServerCommandSource source, MemoManager manager, int style) {
+		Text feedback = manager.setListStyle(style);
+		return sendFeedback(source, feedback);
 	}
 
 	private static int sendFeedback(ServerCommandSource source, Text message) {
@@ -158,7 +301,7 @@ public final class MemoCommand {
 
 	private static CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestNotes(MemoManager manager, SuggestionsBuilder builder) {
 		for (MemoManager.MemoEntry entry : manager.getAllMemos()) {
-			builder.suggest(entry.getNote(), Text.literal("/" + entry.getCommand()));
+			builder.suggest(entry.getNote(), createMemoContentDisplay(entry));
 		}
 		return builder.buildFuture();
 	}
@@ -210,28 +353,54 @@ public final class MemoCommand {
 		for (MemoManager.MemoEntry entry : manager.getAllMemos()) {
 			String note = entry.getNote();
 			if (remaining.isEmpty() || note.toLowerCase(Locale.ROOT).startsWith(remaining)) {
-				builder.suggest("\"" + note + "\"", Text.literal("/" + entry.getCommand()));
+				builder.suggest("\"" + note + "\"", createMemoContentDisplay(entry));
 			}
 		}
 		return builder.buildFuture();
 	}
 
 	private static void sendEditPrompt(ServerCommandSource source, MemoManager.MemoEntry entry) {
-		String fullCommand = "/" + entry.getCommand();
-		MutableText commandText = Text.literal(fullCommand)
-			.styled(style -> style
-				.withColor(Formatting.AQUA)
-				.withUnderline(true)
-				.withClickEvent(new CopyToClipboard(fullCommand))
-				.withHoverEvent(new ShowText(Text.translatable("command.utility-toolkit.memo.list.copy_hint"))));
+		MutableText contentText = createMemoContentDisplay(entry);
 		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.begin", entry.getNote()).formatted(Formatting.GOLD), false);
-		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.current_command").append(commandText).formatted(Formatting.WHITE), false);
+		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.current_command").append(contentText).formatted(Formatting.WHITE), false);
 		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.current_note", entry.getNote()).formatted(Formatting.WHITE), false);
 		source.sendFeedback(() -> Text.translatable("command.utility-toolkit.memo.edit.help", entry.getNote()).formatted(Formatting.YELLOW), false);
 	}
 
 	private static ServerPlayerEntity getPlayer(ServerCommandSource source) {
 		return source.getEntity() instanceof ServerPlayerEntity player ? player : null;
+	}
+
+	/**
+	 * メモの内容表示用に共通のテキストを生成する。
+	 */
+	private static MutableText createMemoContentDisplay(MemoManager.MemoEntry entry) {
+		if (entry.getCommand().isBlank()) {
+			if (entry.getDetails().isBlank()) {
+				return Text.translatable(NO_CONTENT_TRANSLATION_KEY).formatted(Formatting.DARK_GRAY);
+			}
+			// 通常メモの内容は白色で強調して視認性を確保する
+			return Text.literal(entry.getDetails()).formatted(Formatting.WHITE);
+		}
+		String fullCommand = "/" + entry.getCommand();
+		return Text.literal(fullCommand)
+			.styled(style -> style
+				.withColor(Formatting.LIGHT_PURPLE)
+				.withClickEvent(new CopyToClipboard(fullCommand))
+				.withHoverEvent(new ShowText(Text.translatable("command.utility-toolkit.memo.list.copy_hint"))));
+	}
+
+	/**
+	 * 翻訳メッセージにコマンド / 通常メモの内容を埋め込む際の表記を返す。
+	 */
+	private static String describeMemoContent(MemoManager.MemoEntry entry) {
+		if (entry.getCommand().isBlank()) {
+			if (entry.getDetails().isBlank()) {
+				return Text.translatable(NO_CONTENT_TRANSLATION_KEY).getString();
+			}
+			return entry.getDetails();
+		}
+		return "/" + entry.getCommand();
 	}
 
 	private record ParsedInput(String command, String note) {
@@ -253,6 +422,58 @@ public final class MemoCommand {
 
 		boolean hasNote() {
 			return note != null && !note.isBlank();
+		}
+	}
+	private record NoteMemoInput(String note, String body) {
+		static NoteMemoInput parse(String raw) {
+			if (raw == null) {
+				return null;
+			}
+			String trimmed = raw.trim();
+			if (trimmed.isEmpty() || trimmed.charAt(0) != '"') {
+				return null;
+			}
+			StringBuilder current = new StringBuilder();
+			boolean inQuote = false;
+			boolean escaping = false;
+			List<String> parts = new ArrayList<>(2);
+			for (int i = 0; i < trimmed.length(); i++) {
+				char c = trimmed.charAt(i);
+				if (escaping) {
+					current.append(c);
+					escaping = false;
+					continue;
+				}
+				if (c == '\\' && inQuote) {
+					escaping = true;
+					continue;
+				}
+				if (c == '"') {
+					inQuote = !inQuote;
+					if (!inQuote) {
+						parts.add(current.toString());
+						current.setLength(0);
+						if (parts.size() == 2) {
+							for (int j = i + 1; j < trimmed.length(); j++) {
+								if (!Character.isWhitespace(trimmed.charAt(j))) {
+									return null;
+								}
+							}
+							break;
+						}
+					}
+					continue;
+				}
+				if (inQuote) {
+					current.append(c);
+				} else if (!Character.isWhitespace(c)) {
+					return null;
+				}
+			}
+			if (inQuote || parts.size() != 2) {
+				return null;
+			}
+			return new NoteMemoInput(parts.get(0), parts.get(1));
 		}
 	}
 }

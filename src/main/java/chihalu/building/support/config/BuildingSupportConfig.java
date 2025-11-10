@@ -35,6 +35,7 @@ public final class BuildingSupportConfig {
 	private VillageSpawnType villageSpawnType = VillageSpawnType.PLAINS;
 	private boolean pottedPlantPickPrefersPot = true;
 	private final EnumMap<ItemGroupOption, Boolean> itemGroupVisibility = new EnumMap<>(ItemGroupOption.class);
+	private int memoListStyle = 1;
 
 	private BuildingSupportConfig() {
 		resetItemGroupVisibility();
@@ -60,6 +61,7 @@ public final class BuildingSupportConfig {
 				this.villageSpawnType = VillageSpawnType.byId(data.villageSpawnType);
 				this.pottedPlantPickPrefersPot = data.pottedPlantPickPrefersPot;
 				applyItemGroupVisibility(data.itemGroupVisibility);
+				this.memoListStyle = normalizeListStyle(data.memoListStyle);
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			getLogger().error("險ｭ螳壹ヵ繧｡繧､繝ｫ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆: {}", configPath, exception);
@@ -77,7 +79,8 @@ public final class BuildingSupportConfig {
 				historyDisplayMode,
 				villageSpawnType,
 				pottedPlantPickPrefersPot,
-				createItemGroupVisibilityData()
+				createItemGroupVisibilityData(),
+				memoListStyle
 			);
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
@@ -188,6 +191,24 @@ public final class BuildingSupportConfig {
 		}
 	}
 
+	public synchronized int getMemoListStyle() {
+		return memoListStyle;
+	}
+
+	/**
+	 * メモ一覧のスタイルを設定する。
+	 * @return true 変更あり / false 既に同じスタイル
+	 */
+	public synchronized boolean setMemoListStyle(int style) {
+		int normalized = normalizeListStyle(style);
+		if (this.memoListStyle == normalized) {
+			return false;
+		}
+		this.memoListStyle = normalized;
+		save();
+		return true;
+	}
+
 	private Logger getLogger() {
 		return BuildingSupport.LOGGER;
 	}
@@ -201,6 +222,7 @@ public final class BuildingSupportConfig {
 		private String villageSpawnType = VillageSpawnType.PLAINS.id();
 		private boolean pottedPlantPickPrefersPot = true;
 		private Map<String, Boolean> itemGroupVisibility = new HashMap<>();
+		private int memoListStyle = 1;
 
 		private SerializableData(
 			boolean preventIceMelting,
@@ -210,7 +232,8 @@ public final class BuildingSupportConfig {
 			HistoryDisplayMode historyDisplayMode,
 			VillageSpawnType villageSpawnType,
 			boolean pottedPlantPickPrefersPot,
-			Map<String, Boolean> itemGroupVisibility
+			Map<String, Boolean> itemGroupVisibility,
+			int memoListStyle
 		) {
 			this.preventIceMelting = preventIceMelting;
 			this.preventHazardFireSpread = preventHazardFireSpread;
@@ -222,6 +245,7 @@ public final class BuildingSupportConfig {
 			if (itemGroupVisibility != null) {
 				this.itemGroupVisibility.putAll(itemGroupVisibility);
 			}
+			this.memoListStyle = memoListStyle;
 		}
 	}
 
@@ -229,6 +253,10 @@ public final class BuildingSupportConfig {
 		for (ItemGroupOption option : ItemGroupOption.values()) {
 			itemGroupVisibility.put(option, true);
 		}
+	}
+
+	private static int normalizeListStyle(int style) {
+		return style >= 1 && style <= 3 ? style : 1;
 	}
 
 	private void applyItemGroupVisibility(Map<String, Boolean> source) {
