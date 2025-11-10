@@ -70,6 +70,7 @@
   "config.utility-toolkit.category.spawn": "スポーン設定",
 
   "config.utility-toolkit.category.inventory_control": "インベントリ設定",
+  "config.utility-toolkit.category.optimization": "最適化",
 
   "config.utility-toolkit.prevent_ice_melting": "氷の融解を防止",
 
@@ -84,6 +85,8 @@
   "config.utility-toolkit.auto_light_candles.tooltip": "オンにすると、置いただけでろうそくが自動的に点灯します。",
 
   "config.utility-toolkit.potted_pick_prefers_pot": "植木鉢の取得優先度変更",
+  "config.utility-toolkit.disable_sign_edit_screen": "看板設置時に入力画面を開かない",
+  "config.utility-toolkit.disable_sign_edit_screen.tooltip": "看板を設置した直後に開く入力画面をスキップします。WorldEditなどと併用する際の誤操作防止に役立ちます。",
 
   "config.utility-toolkit.potted_pick_prefers_pot.tooltip": "オンにすると、花が植わった植木鉢をホイールクリックした際に鉢本体を取得します。スニークしながらホイールクリックすると花を取得します。",
 

@@ -10,6 +10,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
@@ -39,6 +40,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		PICK_BLOCK_CONTROL,
 		SPAWN,
 		INVENTORY_CONTROL,
+		OPTIMIZATION,
 		INVENTORY_TAB_TOGGLE
 	}
 
@@ -82,6 +84,11 @@ public class BuildingSupportConfigScreen extends Screen {
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.inventory_control"),
 			button -> openInventoryControl())
 			.dimensions(leftX, startY + ROW_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
+			.build());
+
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.optimization"),
+			button -> openOptimization())
+			.dimensions(rightX, startY + ROW_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> close())
@@ -150,6 +157,35 @@ public class BuildingSupportConfigScreen extends Screen {
 				});
 		fireSpreadToggle.setFocused(false);
 		addDrawableChild(fireSpreadToggle);
+
+		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
+			button -> {
+				setFocused(null);
+				openRoot();
+			})
+			.dimensions(getCenterButtonX(), getBottomButtonY(), BUTTON_WIDTH, BUTTON_HEIGHT)
+			.build());
+
+		setFocused(null);
+	}
+
+	private void openOptimization() {
+		currentCategory = Category.OPTIMIZATION;
+		clearScreen();
+		int leftX = getLeftColumnX();
+		int startY = height / 2 - 10;
+		var config = BuildingSupportConfig.getInstance();
+
+		CyclingButtonWidget<Boolean> disableSignInput = CyclingButtonWidget.onOffBuilder(config.isSignEditScreenDisabled())
+			.build(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
+				Text.translatable("config.utility-toolkit.disable_sign_edit_screen"),
+				(button, value) -> {
+					BuildingSupportConfig.getInstance().setSignEditScreenDisabled(value);
+					button.setFocused(false);
+					setFocused(null);
+				});
+		disableSignInput.setTooltip(Tooltip.of(Text.translatable("config.utility-toolkit.disable_sign_edit_screen.tooltip")));
+		addDrawableChild(disableSignInput);
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {

@@ -6,7 +6,8 @@
     "HandledScreenAccessor",
     "CreativeInventoryScreenInvoker",
     "MinecraftClientMixin",
-    "ItemGroupsMixin"
+    "ItemGroupsMixin",
+    "ClientPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -36,6 +36,7 @@ public final class BuildingSupportConfig {
 	private boolean pottedPlantPickPrefersPot = true;
 	private final EnumMap<ItemGroupOption, Boolean> itemGroupVisibility = new EnumMap<>(ItemGroupOption.class);
 	private int memoListStyle = 1;
+	private boolean disableSignEditScreen = false;
 
 	private BuildingSupportConfig() {
 		resetItemGroupVisibility();
@@ -62,6 +63,7 @@ public final class BuildingSupportConfig {
 				this.pottedPlantPickPrefersPot = data.pottedPlantPickPrefersPot;
 				applyItemGroupVisibility(data.itemGroupVisibility);
 				this.memoListStyle = normalizeListStyle(data.memoListStyle);
+				this.disableSignEditScreen = data.disableSignEditScreen;
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			getLogger().error("險ｭ螳壹ヵ繧｡繧､繝ｫ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆: {}", configPath, exception);
@@ -80,7 +82,8 @@ public final class BuildingSupportConfig {
 				villageSpawnType,
 				pottedPlantPickPrefersPot,
 				createItemGroupVisibilityData(),
-				memoListStyle
+				memoListStyle,
+				disableSignEditScreen
 			);
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
@@ -209,6 +212,17 @@ public final class BuildingSupportConfig {
 		return true;
 	}
 
+	public synchronized boolean isSignEditScreenDisabled() {
+		return disableSignEditScreen;
+	}
+
+	public synchronized void setSignEditScreenDisabled(boolean disabled) {
+		if (this.disableSignEditScreen != disabled) {
+			this.disableSignEditScreen = disabled;
+			save();
+		}
+	}
+
 	private Logger getLogger() {
 		return BuildingSupport.LOGGER;
 	}
@@ -223,6 +237,7 @@ public final class BuildingSupportConfig {
 		private boolean pottedPlantPickPrefersPot = true;
 		private Map<String, Boolean> itemGroupVisibility = new HashMap<>();
 		private int memoListStyle = 1;
+		private boolean disableSignEditScreen = false;
 
 		private SerializableData(
 			boolean preventIceMelting,
@@ -233,7 +248,8 @@ public final class BuildingSupportConfig {
 			VillageSpawnType villageSpawnType,
 			boolean pottedPlantPickPrefersPot,
 			Map<String, Boolean> itemGroupVisibility,
-			int memoListStyle
+			int memoListStyle,
+			boolean disableSignEditScreen
 		) {
 			this.preventIceMelting = preventIceMelting;
 			this.preventHazardFireSpread = preventHazardFireSpread;
@@ -246,6 +262,7 @@ public final class BuildingSupportConfig {
 				this.itemGroupVisibility.putAll(itemGroupVisibility);
 			}
 			this.memoListStyle = memoListStyle;
+			this.disableSignEditScreen = disableSignEditScreen;
 		}
 	}
 
