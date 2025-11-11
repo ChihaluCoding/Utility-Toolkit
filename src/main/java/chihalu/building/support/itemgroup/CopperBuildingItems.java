@@ -12,7 +12,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
 /**
- * 銅建材のリストを管理するユーティリティ。
+ * 銅関連ブロックのリストを管理するユーティリティ。
  */
 public final class CopperBuildingItems {
 	private static final List<ItemStack> COPPER_BLOCKS = buildCopperBlockList();
@@ -37,91 +37,58 @@ public final class CopperBuildingItems {
 		stacks.add(new ItemStack(Items.DEEPSLATE_COPPER_ORE));
 		stacks.add(new ItemStack(Items.RAW_COPPER_BLOCK));
 
-		// 基本銅ブロックと派生ブロック
-		addCopperTier(stacks,
-			Items.COPPER_BLOCK, Items.CUT_COPPER, Items.CUT_COPPER_SLAB, Items.CUT_COPPER_STAIRS,
-			Items.COPPER_DOOR, Items.COPPER_TRAPDOOR, Items.COPPER_GRATE, Items.COPPER_BULB);
-		addCopperTier(stacks,
-			Items.EXPOSED_COPPER, Items.EXPOSED_CUT_COPPER, Items.EXPOSED_CUT_COPPER_SLAB, Items.EXPOSED_CUT_COPPER_STAIRS,
-			Items.EXPOSED_COPPER_DOOR, Items.EXPOSED_COPPER_TRAPDOOR, Items.EXPOSED_COPPER_GRATE, Items.EXPOSED_COPPER_BULB);
-		addCopperTier(stacks,
-			Items.WEATHERED_COPPER, Items.WEATHERED_CUT_COPPER, Items.WEATHERED_CUT_COPPER_SLAB, Items.WEATHERED_CUT_COPPER_STAIRS,
-			Items.WEATHERED_COPPER_DOOR, Items.WEATHERED_COPPER_TRAPDOOR, Items.WEATHERED_COPPER_GRATE, Items.WEATHERED_COPPER_BULB);
-		addCopperTier(stacks,
-			Items.OXIDIZED_COPPER, Items.OXIDIZED_CUT_COPPER, Items.OXIDIZED_CUT_COPPER_SLAB, Items.OXIDIZED_CUT_COPPER_STAIRS,
-			Items.OXIDIZED_COPPER_DOOR, Items.OXIDIZED_COPPER_TRAPDOOR, Items.OXIDIZED_COPPER_GRATE, Items.OXIDIZED_COPPER_BULB);
+		addWeatheringFamily(stacks,
+			Items.COPPER_BLOCK, Items.EXPOSED_COPPER, Items.WEATHERED_COPPER, Items.OXIDIZED_COPPER,
+			Items.WAXED_COPPER_BLOCK, Items.WAXED_EXPOSED_COPPER, Items.WAXED_WEATHERED_COPPER, Items.WAXED_OXIDIZED_COPPER);
+		addWeatheringFamily(stacks,
+			Items.CUT_COPPER, Items.EXPOSED_CUT_COPPER, Items.WEATHERED_CUT_COPPER, Items.OXIDIZED_CUT_COPPER,
+			Items.WAXED_CUT_COPPER, Items.WAXED_EXPOSED_CUT_COPPER, Items.WAXED_WEATHERED_CUT_COPPER, Items.WAXED_OXIDIZED_CUT_COPPER);
+		addWeatheringFamily(stacks,
+			Items.CUT_COPPER_SLAB, Items.EXPOSED_CUT_COPPER_SLAB, Items.WEATHERED_CUT_COPPER_SLAB, Items.OXIDIZED_CUT_COPPER_SLAB,
+			Items.WAXED_CUT_COPPER_SLAB, Items.WAXED_EXPOSED_CUT_COPPER_SLAB, Items.WAXED_WEATHERED_CUT_COPPER_SLAB, Items.WAXED_OXIDIZED_CUT_COPPER_SLAB);
+		addWeatheringFamily(stacks,
+			Items.CUT_COPPER_STAIRS, Items.EXPOSED_CUT_COPPER_STAIRS, Items.WEATHERED_CUT_COPPER_STAIRS, Items.OXIDIZED_CUT_COPPER_STAIRS,
+			Items.WAXED_CUT_COPPER_STAIRS, Items.WAXED_EXPOSED_CUT_COPPER_STAIRS, Items.WAXED_WEATHERED_CUT_COPPER_STAIRS, Items.WAXED_OXIDIZED_CUT_COPPER_STAIRS);
+		addWeatheringFamily(stacks,
+			Items.COPPER_DOOR, Items.EXPOSED_COPPER_DOOR, Items.WEATHERED_COPPER_DOOR, Items.OXIDIZED_COPPER_DOOR,
+			Items.WAXED_COPPER_DOOR, Items.WAXED_EXPOSED_COPPER_DOOR, Items.WAXED_WEATHERED_COPPER_DOOR, Items.WAXED_OXIDIZED_COPPER_DOOR);
+		addWeatheringFamily(stacks,
+			Items.COPPER_TRAPDOOR, Items.EXPOSED_COPPER_TRAPDOOR, Items.WEATHERED_COPPER_TRAPDOOR, Items.OXIDIZED_COPPER_TRAPDOOR,
+			Items.WAXED_COPPER_TRAPDOOR, Items.WAXED_EXPOSED_COPPER_TRAPDOOR, Items.WAXED_WEATHERED_COPPER_TRAPDOOR, Items.WAXED_OXIDIZED_COPPER_TRAPDOOR);
+		addWeatheringFamily(stacks,
+			Items.COPPER_GRATE, Items.EXPOSED_COPPER_GRATE, Items.WEATHERED_COPPER_GRATE, Items.OXIDIZED_COPPER_GRATE,
+			Items.WAXED_COPPER_GRATE, Items.WAXED_EXPOSED_COPPER_GRATE, Items.WAXED_WEATHERED_COPPER_GRATE, Items.WAXED_OXIDIZED_COPPER_GRATE);
+		addWeatheringFamily(stacks,
+			Items.COPPER_BULB, Items.EXPOSED_COPPER_BULB, Items.WEATHERED_COPPER_BULB, Items.OXIDIZED_COPPER_BULB,
+			Items.WAXED_COPPER_BULB, Items.WAXED_EXPOSED_COPPER_BULB, Items.WAXED_WEATHERED_COPPER_BULB, Items.WAXED_OXIDIZED_COPPER_BULB);
 
-		// ワックス済みバリエーション
-		addCopperTier(stacks,
-			Items.WAXED_COPPER_BLOCK, Items.WAXED_CUT_COPPER, Items.WAXED_CUT_COPPER_SLAB, Items.WAXED_CUT_COPPER_STAIRS,
-			Items.WAXED_COPPER_DOOR, Items.WAXED_COPPER_TRAPDOOR, Items.WAXED_COPPER_GRATE, Items.WAXED_COPPER_BULB);
-		addCopperTier(stacks,
-			Items.WAXED_EXPOSED_COPPER, Items.WAXED_EXPOSED_CUT_COPPER, Items.WAXED_EXPOSED_CUT_COPPER_SLAB, Items.WAXED_EXPOSED_CUT_COPPER_STAIRS,
-			Items.WAXED_EXPOSED_COPPER_DOOR, Items.WAXED_EXPOSED_COPPER_TRAPDOOR, Items.WAXED_EXPOSED_COPPER_GRATE, Items.WAXED_EXPOSED_COPPER_BULB);
-		addCopperTier(stacks,
-			Items.WAXED_WEATHERED_COPPER, Items.WAXED_WEATHERED_CUT_COPPER, Items.WAXED_WEATHERED_CUT_COPPER_SLAB, Items.WAXED_WEATHERED_CUT_COPPER_STAIRS,
-			Items.WAXED_WEATHERED_COPPER_DOOR, Items.WAXED_WEATHERED_COPPER_TRAPDOOR, Items.WAXED_WEATHERED_COPPER_GRATE, Items.WAXED_WEATHERED_COPPER_BULB);
-		addCopperTier(stacks,
-			Items.WAXED_OXIDIZED_COPPER, Items.WAXED_OXIDIZED_CUT_COPPER, Items.WAXED_OXIDIZED_CUT_COPPER_SLAB, Items.WAXED_OXIDIZED_CUT_COPPER_STAIRS,
-			Items.WAXED_OXIDIZED_COPPER_DOOR, Items.WAXED_OXIDIZED_COPPER_TRAPDOOR, Items.WAXED_OXIDIZED_COPPER_GRATE, Items.WAXED_OXIDIZED_COPPER_BULB);
-
-		// その他の銅系建材
-		addWeatheringSet(stacks, "lightning_rod");
-		addWaxedWeatheringSet(stacks, "lightning_rod");
-		stacks.add(new ItemStack(Items.CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.EXPOSED_CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.WEATHERED_CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.OXIDIZED_CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.WAXED_CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.WAXED_EXPOSED_CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.WAXED_WEATHERED_CHISELED_COPPER));
-		stacks.add(new ItemStack(Items.WAXED_OXIDIZED_CHISELED_COPPER));
+		addWeatheringFamily(stacks, "lightning_rod");
+		addWeatheringFamily(stacks, "chiseled_copper");
 
 		addItemIfPresent(stacks, "chain");
-		addItemIfPresent(stacks, "iron_bars");
 
-		addWeatheringSet(stacks, "copper_chain");
-		addWeatheringSet(stacks, "copper_lantern");
-		addWeatheringSet(stacks, "copper_bars");
-		addWeatheringSet(stacks, "copper_torch");
-		addWeatheringSet(stacks, "copper_chest");
-
-		addWaxedWeatheringSet(stacks, "copper_chain");
-		addWaxedWeatheringSet(stacks, "copper_lantern");
-		addWaxedWeatheringSet(stacks, "copper_bars");
-		addWaxedWeatheringSet(stacks, "copper_torch");
-		addWaxedWeatheringSet(stacks, "copper_chest");
+		addWeatheringFamily(stacks, "copper_chain");
+		addWeatheringFamily(stacks, "copper_lantern");
+		addWeatheringFamily(stacks, "copper_bars");
+		addWeatheringFamily(stacks, "copper_torch");
+		addWeatheringFamily(stacks, "copper_chest");
 
 		return Collections.unmodifiableList(stacks);
 	}
 
-	private static void addCopperTier(List<ItemStack> stacks,
-									  net.minecraft.item.Item block,
-									  net.minecraft.item.Item cut,
-									  net.minecraft.item.Item slab,
-									  net.minecraft.item.Item stairs,
-									  net.minecraft.item.Item door,
-									  net.minecraft.item.Item trapdoor,
-									  net.minecraft.item.Item grate,
-									  net.minecraft.item.Item bulb) {
-		stacks.add(new ItemStack(block));
-		stacks.add(new ItemStack(cut));
-		stacks.add(new ItemStack(slab));
-		stacks.add(new ItemStack(stairs));
-		stacks.add(new ItemStack(door));
-		stacks.add(new ItemStack(trapdoor));
-		stacks.add(new ItemStack(grate));
-		stacks.add(new ItemStack(bulb));
+	private static void addWeatheringFamily(List<ItemStack> stacks, Item... variants) {
+		for (Item item : variants) {
+			if (item != null) {
+				stacks.add(new ItemStack(item));
+			}
+		}
 	}
 
-	private static void addWeatheringSet(List<ItemStack> stacks, String baseId) {
+	private static void addWeatheringFamily(List<ItemStack> stacks, String baseId) {
 		addVariant(stacks, baseId);
 		addVariant(stacks, "exposed_" + baseId);
 		addVariant(stacks, "weathered_" + baseId);
 		addVariant(stacks, "oxidized_" + baseId);
-	}
-
-	private static void addWaxedWeatheringSet(List<ItemStack> stacks, String baseId) {
 		addVariant(stacks, "waxed_" + baseId);
 		addVariant(stacks, "waxed_exposed_" + baseId);
 		addVariant(stacks, "waxed_weathered_" + baseId);
