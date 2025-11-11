@@ -33,33 +33,16 @@ public final class VillageCommand {
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, VillageSpawnManager manager) {
 		VillageCommand handler = new VillageCommand(manager);
+		// /village new コマンドだけを提供し、旧 /village コマンドは無効化する
 		dispatcher.register(CommandManager.literal("village")
 			.requires(source -> source.hasPermissionLevel(2))
-			.executes(context -> handler.teleportToSecondVillage(context.getSource()))
 			.then(CommandManager.literal("new")
 				.executes(context -> handler.teleportToNewVillage(context.getSource(), DEFAULT_NEW_VILLAGE_DISTANCE))
 				.then(CommandManager.argument("distance", IntegerArgumentType.integer(1))
 					.executes(context -> handler.teleportToNewVillage(context.getSource(), IntegerArgumentType.getInteger(context, "distance"))))));
 	}
 
-	private int teleportToSecondVillage(ServerCommandSource source) throws CommandSyntaxException {
-		ServerPlayerEntity player = source.getPlayer();
-		ServerWorld world = source.getWorld();
-		if (!isOverworld(world, source)) {
-			return 0;
-		}
-
-		BuildingSupportConfig.VillageSpawnType type = BuildingSupportConfig.getInstance().getVillageSpawnType();
-		VillageVisitTracker tracker = VillageVisitTracker.get(world);
-		Optional<VillageSpawnManager.VillageLocation> location = villageSpawnManager.findNthNearestVillage(world, player.getBlockPos(), type, 1, DEFAULT_NEW_VILLAGE_DISTANCE);
-		if (location.isEmpty()) {
-			source.sendFeedback(() -> Text.translatable("command.utility-toolkit.village.not_found"), false);
-			return 0;
-		}
-
-		return performTeleport(source, player, world, type, location.get(), tracker);
-	}
-
+	// まだ訪れていない村へプレイヤーを送るメイン処理
 	private int teleportToNewVillage(ServerCommandSource source, int distance) throws CommandSyntaxException {
 		ServerPlayerEntity player = source.getPlayer();
 		ServerWorld world = source.getWorld();

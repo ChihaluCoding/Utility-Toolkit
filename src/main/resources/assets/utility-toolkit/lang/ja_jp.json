@@ -26,9 +26,9 @@
 
   "message.utility-toolkit.favorite.no_item": "現在選択しているスロットにアイテムがありません。",
 
-  "message.utility-toolkit.favorite.added": "%s をお気に入りに追加しました。",
+  "message.utility-toolkit.favorite.added": "%2$s に %1$s を追加しました。",
 
-  "message.utility-toolkit.favorite.removed": "%s をお気に入りから削除しました。",
+  "message.utility-toolkit.favorite.removed": "%2$s から %1$s を削除しました。",
 
   "message.utility-toolkit.copy_item_id.success": "アイテムID %s をコピーしました。",
 
@@ -54,9 +54,9 @@
 
   "command.utility-toolkit.village.overworld_only": "このコマンドはオーバーワールドでのみ使用できます。",
 
-  "command.utility-toolkit.village.not_found": "条件に合う村が見つかりませんでした。",
 
   "command.utility-toolkit.village.teleported": "%s の村にテレポートしました。座標: (%s, %s, %s)",
+  "command.utility-toolkit.extinguish.fire.success": "周囲半径 %2$s ブロック内の火を %1$s 個消火しました。",
 
   "command.utility-toolkit.village.no_new": "未訪問の村は見つかりませんでした。",
 
@@ -122,8 +122,8 @@
 
   "config.utility-toolkit.inventory_control.tab_category": "インベントリ制御 - タブ表示",
   "config.utility-toolkit.custom_tabs.rename_button": "設定を保存",
-  "config.utility-toolkit.custom_tabs.name_label": "表示名",
-  "config.utility-toolkit.custom_tabs.icon_label": "アイコンID",
+  "config.utility-toolkit.custom_tabs.name_label": "タブ名",
+  "config.utility-toolkit.custom_tabs.icon_label": "タブアイコン",
   "config.utility-toolkit.custom_tabs.icon_hint": "例: minecraft:paper",
 
   "config.utility-toolkit.inventory_control.tab_path": "インベントリ制御 ▶ タブ表示 ▶ 表示 / 非表示切り替え",

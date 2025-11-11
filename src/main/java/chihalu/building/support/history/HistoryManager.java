@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import chihalu.building.support.BuildingSupport;
 import chihalu.building.support.config.BuildingSupportConfig;
 import chihalu.building.support.BuildingSupportStorage;
+import chihalu.building.support.storage.SavedStack;
 
 public final class HistoryManager {
 	private static final HistoryManager INSTANCE = new HistoryManager();
@@ -41,7 +42,7 @@ public final class HistoryManager {
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path historyDir = BuildingSupportStorage.resolve("history");
 
-	private final Deque<Identifier> recentItems = new ArrayDeque<>();
+	private final Deque<SavedStack> recentItems = new ArrayDeque<>();
 	private Path activeHistoryPath = getWorldHistoryPath(DEFAULT_WORLD_KEY);
 	private String activeWorldKey = DEFAULT_WORLD_KEY;
 	// 履歴ファイルの読み書きをメインスレッドから切り離すための専用I/Oスレッド
@@ -52,7 +53,7 @@ public final class HistoryManager {
 	});
 	// 全ワールド履歴をキャッシュして繰り返しのディスクI/Oを避ける
 	private final Object globalCacheLock = new Object();
-	private Deque<Identifier> globalHistoryCache = new ArrayDeque<>();
+	private Deque<SavedStack> globalHistoryCache = new ArrayDeque<>();
 	private FileTime globalCacheTimestamp = FileTime.fromMillis(0L);
 	private boolean globalCacheInitialized = false;
 
@@ -84,23 +85,21 @@ public final class HistoryManager {
 		recentItems.addAll(loadHistory(activeHistoryPath));
 	}
 
-	public synchronized void recordUsage(Identifier id) {
-		if (id == null || !Registries.ITEM.containsId(id)) {
-			return;
-		}
+	// 装飾を含む最新の ItemStack を履歴へ記録する
+	public synchronized void recordUsage(ItemStack stack) {
+		SavedStack.capture(stack).ifPresent(this::recordSnapshot);
+	}
 
-		updateDeque(recentItems, id);
-		Path historyPath = activeHistoryPath;
-		String worldKeySnapshot = activeWorldKey;
-		saveHistoryAsync(historyPath, recentItems, worldKeySnapshot);
-		updateGlobalHistory(id);
+	// 旧API互換: ID 指定のみで履歴へ登録する
+	public synchronized void recordUsage(Identifier id) {
+		SavedStack.fromId(id).ifPresent(this::recordSnapshot);
 	}
 
 	public synchronized List<ItemStack> getDisplayStacksForTab() {
-		Deque<Identifier> source = getHistoryIdentifiersForDisplay();
+		Deque<SavedStack> source = getHistoryEntriesForDisplay();
 		List<ItemStack> stacks = new ArrayList<>();
-		for (Identifier id : source) {
-			ItemStack stack = createStack(id);
+		for (SavedStack saved : source) {
+			ItemStack stack = saved.toItemStack();
 			if (!stack.isEmpty()) {
 				stacks.add(stack);
 			}
@@ -112,9 +111,9 @@ public final class HistoryManager {
 	}
 
 	public synchronized ItemStack getIconStack() {
-		Deque<Identifier> source = getHistoryIdentifiersForDisplay();
-		for (Identifier id : source) {
-			ItemStack stack = createStack(id);
+		Deque<SavedStack> source = getHistoryEntriesForDisplay();
+		for (SavedStack saved : source) {
+			ItemStack stack = saved.toItemStack();
 			if (!stack.isEmpty()) {
 				return stack;
 			}
@@ -128,7 +127,16 @@ public final class HistoryManager {
 		}
 	}
 
-	private Deque<Identifier> getHistoryIdentifiersForDisplay() {
+	// スナップショット化した履歴をメモリとディスクへ反映する共通処理
+	private void recordSnapshot(SavedStack snapshot) {
+		updateDeque(recentItems, snapshot);
+		Path historyPath = activeHistoryPath;
+		String worldKeySnapshot = activeWorldKey;
+		saveHistoryAsync(historyPath, recentItems, worldKeySnapshot);
+		updateGlobalHistory(snapshot);
+	}
+
+	private Deque<SavedStack> getHistoryEntriesForDisplay() {
 		BuildingSupportConfig.HistoryDisplayMode mode = BuildingSupportConfig.getInstance().getHistoryDisplayMode();
 		if (mode == BuildingSupportConfig.HistoryDisplayMode.ALL_WORLD) {
 			return loadHistory(getGlobalHistoryPath());
@@ -136,10 +144,10 @@ public final class HistoryManager {
 		return new ArrayDeque<>(recentItems);
 	}
 
-	private void updateGlobalHistory(Identifier id) {
+	private void updateGlobalHistory(SavedStack snapshot) {
 		Path globalPath = getGlobalHistoryPath();
-		Deque<Identifier> global = loadHistory(globalPath);
-		updateDeque(global, id);
+		Deque<SavedStack> global = loadHistory(globalPath);
+		updateDeque(global, snapshot);
 		saveHistoryAsync(globalPath, global, GLOBAL_HISTORY_WORLD_KEY);
 	}
 
@@ -242,19 +250,19 @@ public final class HistoryManager {
 		return entries;
 	}
 
-	private Deque<Identifier> loadHistory(Path path) {
+	private Deque<SavedStack> loadHistory(Path path) {
 		if (path.equals(getGlobalHistoryPath())) {
 			return loadGlobalHistoryWithCache();
 		}
 		return readHistoryFromDisk(path);
 	}
 
-	private Deque<Identifier> loadGlobalHistoryWithCache() {
+	private Deque<SavedStack> loadGlobalHistoryWithCache() {
 		Path globalPath = getGlobalHistoryPath();
 		FileTime lastModified = getFileTimestamp(globalPath);
 		synchronized (globalCacheLock) {
 			if (!globalCacheInitialized || !Objects.equals(lastModified, globalCacheTimestamp)) {
-				Deque<Identifier> loaded = readHistoryFromDisk(globalPath);
+				Deque<SavedStack> loaded = readHistoryFromDisk(globalPath);
 				globalHistoryCache = new ArrayDeque<>(loaded);
 				globalCacheTimestamp = lastModified;
 				globalCacheInitialized = true;
@@ -272,13 +280,25 @@ public final class HistoryManager {
 		}
 	}
 
-	private Deque<Identifier> readHistoryFromDisk(Path path) {
-		Deque<Identifier> deque = new ArrayDeque<>();
+	private Deque<SavedStack> readHistoryFromDisk(Path path) {
+		Deque<SavedStack> deque = new ArrayDeque<>();
 		Optional<SerializableData> data = readSerializableData(path);
-		if (data.isEmpty() || data.get().items == null) {
+		if (data.isEmpty()) {
 			return deque;
 		}
-		List<String> items = data.get().items;
+		SerializableData serializableData = data.get();
+		if (serializableData.entries != null && !serializableData.entries.isEmpty()) {
+			List<SavedStack.Serialized> entries = serializableData.entries;
+			for (int i = entries.size() - 1; i >= 0; i--) {
+				SavedStack.Serialized entry = entries.get(i);
+				SavedStack.fromSerialized(entry).ifPresent(saved -> updateDeque(deque, saved));
+			}
+			return deque;
+		}
+		if (serializableData.items == null) {
+			return deque;
+		}
+		List<String> items = serializableData.items;
 		for (int i = items.size() - 1; i >= 0; i--) {
 			String idString = items.get(i);
 			if (idString == null || idString.isBlank()) {
@@ -286,7 +306,7 @@ public final class HistoryManager {
 			}
 			Identifier id = Identifier.tryParse(idString.trim());
 			if (id != null && Registries.ITEM.containsId(id)) {
-				updateDeque(deque, id);
+				SavedStack.fromId(id).ifPresent(saved -> updateDeque(deque, saved));
 			}
 		}
 		return deque;
@@ -295,15 +315,18 @@ public final class HistoryManager {
 	/**
 	 * メインスレッドで収集した履歴内容を即座にスナップショットし、I/O専用スレッドで非同期保存する。
 	 */
-	private void saveHistoryAsync(Path path, Deque<Identifier> deque, String worldKey) {
-		Deque<Identifier> snapshot = new ArrayDeque<>(deque);
+	private void saveHistoryAsync(Path path, Deque<SavedStack> deque, String worldKey) {
+		Deque<SavedStack> snapshot = new ArrayDeque<>(deque);
 		ioExecutor.execute(() -> writeHistorySnapshot(path, snapshot, worldKey));
 	}
 
-	private void writeHistorySnapshot(Path path, Deque<Identifier> snapshot, String worldKey) {
+	private void writeHistorySnapshot(Path path, Deque<SavedStack> snapshot, String worldKey) {
 		try {
 			Files.createDirectories(historyDir);
-			SerializableData data = new SerializableData(snapshot.stream().map(Identifier::toString).toList(), worldKey);
+			List<SavedStack.Serialized> serialized = snapshot.stream()
+				.map(SavedStack::toSerialized)
+				.toList();
+			SerializableData data = new SerializableData(serialized, worldKey);
 			try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
 			}
@@ -315,7 +338,7 @@ public final class HistoryManager {
 		}
 	}
 
-	private void updateGlobalCacheFromSnapshot(Deque<Identifier> snapshot, Path path) {
+	private void updateGlobalCacheFromSnapshot(Deque<SavedStack> snapshot, Path path) {
 		FileTime timestamp = getFileTimestamp(path);
 		synchronized (globalCacheLock) {
 			globalHistoryCache = new ArrayDeque<>(snapshot);
@@ -338,19 +361,12 @@ public final class HistoryManager {
 		return Optional.empty();
 	}
 
-	private static void updateDeque(Deque<Identifier> deque, Identifier id) {
-		deque.remove(id);
-		deque.addFirst(id);
+	private static void updateDeque(Deque<SavedStack> deque, SavedStack snapshot) {
+		deque.removeIf(existing -> existing.id().equals(snapshot.id()));
+		deque.addFirst(snapshot);
 		while (deque.size() > MAX_HISTORY) {
 			deque.removeLast();
 		}
-	}
-
-	private ItemStack createStack(Identifier id) {
-		if (!Registries.ITEM.containsId(id)) {
-			return ItemStack.EMPTY;
-		}
-		return new ItemStack(Registries.ITEM.get(id));
 	}
 
 	private Path getWorldHistoryPath(String sanitizedKey) {
@@ -402,10 +418,14 @@ public final class HistoryManager {
 
 	private static final class SerializableData {
 		private List<String> items;
+		private List<SavedStack.Serialized> entries;
 		private String worldKey;
 
-		private SerializableData(List<String> items, String worldKey) {
-			this.items = items;
+		private SerializableData() {
+		}
+
+		private SerializableData(List<SavedStack.Serialized> entries, String worldKey) {
+			this.entries = entries;
 			this.worldKey = worldKey;
 		}
 	}

@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import chihalu.building.support.command.CommandPresetManager;
+import chihalu.building.support.command.ExtinguishCommand;
 import chihalu.building.support.command.MemoCommand;
 import chihalu.building.support.command.MemoManager;
 import chihalu.building.support.command.PresetCommand;
@@ -208,6 +209,8 @@ public class BuildingSupport implements ModInitializer {
 			MemoCommand.register(dispatcher, MemoManager.getInstance()));
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			VillageCommand.register(dispatcher, registryAccess, VillageSpawnManager.getInstance()));
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+			ExtinguishCommand.register(dispatcher, registryAccess));
 	}
 
 	private void registerEvents() {

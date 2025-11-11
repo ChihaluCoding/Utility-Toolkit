@@ -6,8 +6,11 @@ import java.util.List;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -419,12 +422,15 @@ public class BuildingSupportConfigScreen extends Screen {
 		var config = BuildingSupportConfig.getInstance();
 
 		// 常時表示されるカスタムタブの名前を直接編集できるフィールド
+		int labelOffset = textRenderer.fontHeight + 4;
+		addDrawableChild(new LabelWidget(fieldX, baseY - labelOffset, Text.translatable("config.utility-toolkit.custom_tabs.name_label")));
 		customTabNameField = new TextFieldWidget(textRenderer, fieldX, baseY, fieldWidth, BUTTON_HEIGHT, Text.empty());
 		customTabNameField.setMaxLength(32);
 		customTabNameField.setText(config.getCustomTabName());
 		addDrawableChild(customTabNameField);
 
 		int iconFieldY = baseY + ROW_SPACING * 2;
+		addDrawableChild(new LabelWidget(fieldX, iconFieldY - labelOffset, Text.translatable("config.utility-toolkit.custom_tabs.icon_label")));
 		customTabIconField = new TextFieldWidget(textRenderer, fieldX, iconFieldY, fieldWidth, BUTTON_HEIGHT, Text.empty());
 		customTabIconField.setMaxLength(128);
 		customTabIconField.setText(config.getCustomTabIconId());
@@ -503,20 +509,6 @@ public class BuildingSupportConfigScreen extends Screen {
 			}
 		} else if (currentCategory == Category.CUSTOM_TABS) {
 			context.drawCenteredTextWithShadow(textRenderer, Text.translatable("config.utility-toolkit.inventory_control.custom_tabs"), width / 2, 50, 0xFFFFFF);
-			if (customTabNameField != null) {
-				context.drawCenteredTextWithShadow(textRenderer,
-					Text.translatable("config.utility-toolkit.custom_tabs.name_label"),
-					width / 2,
-					customTabNameField.getY() - 12,
-					0xFFFFFF);
-			}
-			if (customTabIconField != null) {
-				context.drawCenteredTextWithShadow(textRenderer,
-					Text.translatable("config.utility-toolkit.custom_tabs.icon_label"),
-					width / 2,
-					customTabIconField.getY() - 12,
-					0xFFFFFF);
-			}
 		}
 
 		super.render(context, mouseX, mouseY, delta);
@@ -645,4 +637,29 @@ public class BuildingSupportConfigScreen extends Screen {
 		}
 		InventoryTabVisibilityController.reloadFromConfig();
 	}
+
+	private class LabelWidget extends ClickableWidget {
+		private final TextRenderer renderer;
+		private final int color = 0xFFFFFF;
+
+		LabelWidget(int x, int y, Text text) {
+			super(x, y,
+				BuildingSupportConfigScreen.this.textRenderer.getWidth(text),
+				BuildingSupportConfigScreen.this.textRenderer.fontHeight,
+				text);
+			this.renderer = BuildingSupportConfigScreen.this.textRenderer;
+			this.active = false;
+		}
+
+		@Override
+		protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+			context.drawTextWithShadow(renderer, getMessage(), getX(), getY(), color);
+		}
+
+		@Override
+		protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+			builder.put(NarrationPart.TITLE, getMessage());
+		}
+	}
 }
+

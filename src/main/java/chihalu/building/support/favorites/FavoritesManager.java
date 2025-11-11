@@ -16,18 +16,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import chihalu.building.support.BuildingSupport;
 import chihalu.building.support.BuildingSupportStorage;
+import chihalu.building.support.storage.SavedStack;
 
 public final class FavoritesManager {
 	private static final FavoritesManager INSTANCE = new FavoritesManager();
 
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath = BuildingSupportStorage.resolve("favorites.json");
-	private final LinkedHashSet<Identifier> favorites = new LinkedHashSet<>();
+	private final LinkedHashMap<Identifier, SavedStack> favorites = new LinkedHashMap<>();
 
 	private FavoritesManager() {
 	}
@@ -46,7 +47,18 @@ public final class FavoritesManager {
 		try (Reader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
 			SerializableData data = gson.fromJson(reader, SerializableData.class);
 
-			if (data == null || data.favorites == null) {
+			if (data == null) {
+				return;
+			}
+
+			if (data.entries != null && !data.entries.isEmpty()) {
+				for (SavedStack.Serialized entry : data.entries) {
+					SavedStack.fromSerialized(entry).ifPresent(saved -> favorites.put(saved.id(), saved));
+				}
+				return;
+			}
+
+			if (data.favorites == null) {
 				return;
 			}
 
@@ -62,7 +74,7 @@ public final class FavoritesManager {
 				}
 
 				if (Registries.ITEM.containsId(id)) {
-					favorites.add(id);
+					SavedStack.fromId(id).ifPresent(saved -> favorites.put(saved.id(), saved));
 				} else {
 					BuildingSupport.LOGGER.warn("存在しないアイテムIDを無視しました: {}", entry);
 				}
@@ -73,7 +85,11 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean addFavorite(Identifier id) {
-		boolean added = favorites.add(id);
+		var saved = SavedStack.fromId(id);
+		if (saved.isEmpty()) {
+			return false;
+		}
+		boolean added = putSnapshotIfAbsent(saved.get());
 		if (added) {
 			save();
 		}
@@ -81,7 +97,7 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean removeFavorite(Identifier id) {
-		boolean removed = favorites.remove(id);
+		boolean removed = favorites.remove(id) != null;
 		if (removed) {
 			save();
 		}
@@ -89,15 +105,29 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean toggleFavorite(Identifier id) {
-		if (favorites.contains(id)) {
+		if (favorites.containsKey(id)) {
 			favorites.remove(id);
 			save();
 			return false;
 		}
-
-		favorites.add(id);
+		var saved = SavedStack.fromId(id);
+		if (saved.isEmpty()) {
+			return false;
+		}
+		favorites.put(id, saved.get());
 		save();
 		return true;
+	}
+
+	// 装飾を含めたスタックをそのままお気に入りへトグル登録する
+	public synchronized boolean toggleFavorite(ItemStack stack) {
+		var saved = SavedStack.capture(stack);
+		if (saved.isEmpty()) {
+			return false;
+		}
+		boolean added = toggleSnapshot(saved.get());
+		save();
+		return added;
 	}
 
 	public synchronized void clearFavorites() {
@@ -110,28 +140,27 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean isFavorite(Identifier id) {
-		return favorites.contains(id);
+		return favorites.containsKey(id);
 	}
 
 	public synchronized List<Identifier> getFavoriteIds() {
-		return List.copyOf(favorites);
+		return List.copyOf(favorites.keySet());
 	}
 
 	public synchronized ItemStack getIconStack() {
-		for (Identifier id : favorites) {
-			ItemStack stack = createStack(id);
+		for (SavedStack saved : favorites.values()) {
+			ItemStack stack = saved.toItemStack();
 			if (!stack.isEmpty()) {
 				return stack;
 			}
 		}
-
 		return new ItemStack(Blocks.AMETHYST_CLUSTER);
 	}
 
 	public synchronized List<ItemStack> getFavoriteStacks() {
 		List<ItemStack> stacks = new ArrayList<>();
-		for (Identifier id : favorites) {
-			ItemStack stack = createStack(id);
+		for (SavedStack saved : favorites.values()) {
+			ItemStack stack = saved.toItemStack();
 			if (!stack.isEmpty()) {
 				stacks.add(stack);
 			}
@@ -155,18 +184,33 @@ public final class FavoritesManager {
 		}
 	}
 
-	private ItemStack createStack(Identifier id) {
-		if (!Registries.ITEM.containsId(id)) {
-			return ItemStack.EMPTY;
+	// 同じIDが二重登録されないように確認しつつ追加するためのヘルパー
+	private boolean putSnapshotIfAbsent(SavedStack snapshot) {
+		if (favorites.containsKey(snapshot.id())) {
+			return false;
 		}
+		favorites.put(snapshot.id(), snapshot);
+		return true;
+	}
 
-		return new ItemStack(Registries.ITEM.get(id));
+	// 追加済みなら削除、未登録なら追加するトグル処理
+	private boolean toggleSnapshot(SavedStack snapshot) {
+		Identifier key = snapshot.id();
+		if (favorites.containsKey(key)) {
+			favorites.remove(key);
+			return false;
+		}
+		favorites.put(key, snapshot);
+		return true;
 	}
 
 	private synchronized void save() {
 		try {
 			Files.createDirectories(configPath.getParent());
-			SerializableData data = new SerializableData(favorites.stream().map(Identifier::toString).toList());
+			List<SavedStack.Serialized> serialized = favorites.values().stream()
+				.map(SavedStack::toSerialized)
+				.toList();
+			SerializableData data = new SerializableData(serialized);
 
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
@@ -178,12 +222,13 @@ public final class FavoritesManager {
 
 	private static final class SerializableData {
 		private List<String> favorites;
+		private List<SavedStack.Serialized> entries;
 
 		private SerializableData() {
 		}
 
-		private SerializableData(List<String> favorites) {
-			this.favorites = favorites;
+		private SerializableData(List<SavedStack.Serialized> entries) {
+			this.entries = entries;
 		}
 	}
 }

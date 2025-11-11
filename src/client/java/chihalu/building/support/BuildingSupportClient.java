@@ -157,15 +157,15 @@ public class BuildingSupportClient implements ClientModInitializer {
 		}
 
 		ItemStack stack = slot.getStack();
-		Identifier id = Registries.ITEM.getId(stack.getItem());
 		FavoritesManager manager = FavoritesManager.getInstance();
-		boolean added = manager.toggleFavorite(id);
+		boolean added = manager.toggleFavorite(stack); // 装飾を失わずにお気に入りへ登録する
 		Text itemText = stack.toHoverableText();
+		Text tabText = Text.translatable("itemGroup.utility-toolkit.favorites").formatted(Formatting.LIGHT_PURPLE);
 
 		if (added) {
-			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.added", itemText).formatted(Formatting.GREEN), false);
+			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.added", itemText, tabText).formatted(Formatting.GREEN), false);
 		} else {
-			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.removed", itemText).formatted(Formatting.YELLOW), false);
+			client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.removed", itemText, tabText).formatted(Formatting.YELLOW), false);
 		}
 
 		ItemGroup favoritesGroup = Registries.ITEM_GROUP.get(BuildingSupport.FAVORITES_ITEM_GROUP_KEY);
@@ -188,9 +188,8 @@ public class BuildingSupportClient implements ClientModInitializer {
 		}
 
 		ItemStack stack = slot.getStack();
-		Identifier id = Registries.ITEM.getId(stack.getItem());
 		CustomTabsManager manager = CustomTabsManager.getInstance();
-		boolean added = manager.toggleItem(id);
+		boolean added = manager.toggleItem(stack); // 実際に表示されている見た目をそのまま記録する
 		Text itemText = stack.toHoverableText();
 		String tabName = BuildingSupportConfig.getInstance().getCustomTabName();
 		Text tabNameText = Text.literal(tabName).formatted(Formatting.LIGHT_PURPLE);
@@ -241,8 +240,7 @@ public class BuildingSupportClient implements ClientModInitializer {
 			return;
 		}
 
-		Identifier id = Registries.ITEM.getId(stack.getItem());
-		HistoryManager.getInstance().recordUsage(id);
+		HistoryManager.getInstance().recordUsage(stack); // 使用履歴にも装飾込みで反映する
 
 		List<ItemStack> historyStacks = updateHistoryGroupStacks();
 

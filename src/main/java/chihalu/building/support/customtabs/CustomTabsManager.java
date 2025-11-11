@@ -16,13 +16,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import chihalu.building.support.BuildingSupport;
 import chihalu.building.support.BuildingSupportStorage;
 import chihalu.building.support.config.BuildingSupportConfig;
 import chihalu.building.support.client.accessor.ItemGroupIconAccessor;
+import chihalu.building.support.storage.SavedStack;
 
 /**
  * カスタムタブに登録されたアイテムを管理するクラス。
@@ -33,7 +34,7 @@ public final class CustomTabsManager {
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath = BuildingSupportStorage.resolve("custom_tabs.json");
 
-	private final LinkedHashSet<Identifier> items = new LinkedHashSet<>();
+	private final LinkedHashMap<Identifier, SavedStack> items = new LinkedHashMap<>();
 	private ItemGroup registeredGroup;
 
 	private CustomTabsManager() {
@@ -50,7 +51,16 @@ public final class CustomTabsManager {
 		}
 		try (Reader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
 			SerializableData data = gson.fromJson(reader, SerializableData.class);
-			if (data == null || data.items == null) {
+			if (data == null) {
+				return;
+			}
+			if (data.entries != null && !data.entries.isEmpty()) {
+				for (SavedStack.Serialized entry : data.entries) {
+					SavedStack.fromSerialized(entry).ifPresent(saved -> items.put(saved.id(), saved));
+				}
+				return;
+			}
+			if (data.items == null) {
 				return;
 			}
 			for (String rawId : data.items) {
@@ -62,7 +72,7 @@ public final class CustomTabsManager {
 					BuildingSupport.LOGGER.warn("無効なカスタムタブ用IDを検出しました: {}", rawId);
 					continue;
 				}
-				items.add(id);
+				SavedStack.fromId(id).ifPresent(saved -> items.put(saved.id(), saved));
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			BuildingSupport.LOGGER.error("custom_tabs.json の読み込みに失敗しました: {}", configPath, exception);
@@ -81,7 +91,11 @@ public final class CustomTabsManager {
 		if (!isValidItem(id)) {
 			return false;
 		}
-		boolean added = items.add(id);
+		var saved = SavedStack.fromId(id);
+		if (saved.isEmpty()) {
+			return false;
+		}
+		boolean added = putSnapshotIfAbsent(saved.get());
 		if (added) {
 			save();
 		}
@@ -89,7 +103,7 @@ public final class CustomTabsManager {
 	}
 
 	public synchronized boolean removeItem(Identifier id) {
-		boolean removed = items.remove(id);
+		boolean removed = items.remove(id) != null;
 		if (removed) {
 			save();
 		}
@@ -100,14 +114,27 @@ public final class CustomTabsManager {
 		if (!isValidItem(id)) {
 			return false;
 		}
-		boolean added;
-		if (items.contains(id)) {
+		if (items.containsKey(id)) {
 			items.remove(id);
-			added = false;
-		} else {
-			items.add(id);
-			added = true;
+			save();
+			return false;
 		}
+		var saved = SavedStack.fromId(id);
+		if (saved.isEmpty()) {
+			return false;
+		}
+		items.put(id, saved.get());
+		save();
+		return true;
+	}
+
+	// Shift + B から渡されたスタックを装飾込みでカスタムタブに保持する
+	public synchronized boolean toggleItem(ItemStack stack) {
+		var saved = SavedStack.capture(stack);
+		if (saved.isEmpty()) {
+			return false;
+		}
+		boolean added = toggleSnapshot(saved.get());
 		save();
 		return added;
 	}
@@ -121,7 +148,7 @@ public final class CustomTabsManager {
 	}
 
 	public synchronized List<Identifier> getItems() {
-		return List.copyOf(items);
+		return List.copyOf(items.keySet());
 	}
 
 	public synchronized ItemStack getIconStack() {
@@ -139,11 +166,11 @@ public final class CustomTabsManager {
 
 	private synchronized List<ItemStack> getDisplayStacks() {
 		List<ItemStack> stacks = new ArrayList<>();
-		for (Identifier id : items) {
-			if (!Registries.ITEM.containsId(id)) {
-				continue;
+		for (SavedStack saved : items.values()) {
+			ItemStack stack = saved.toItemStack();
+			if (!stack.isEmpty()) {
+				stacks.add(stack);
 			}
-			stacks.add(new ItemStack(Registries.ITEM.get(id)));
 		}
 		if (stacks.isEmpty()) {
 			stacks.add(new ItemStack(Items.PAPER));
@@ -168,8 +195,31 @@ public final class CustomTabsManager {
 		return id != null && Registries.ITEM.containsId(id);
 	}
 
+	// 既に登録済みかどうかを確認しつつスナップショットを保持する
+	private boolean putSnapshotIfAbsent(SavedStack snapshot) {
+		if (items.containsKey(snapshot.id())) {
+			return false;
+		}
+		items.put(snapshot.id(), snapshot);
+		return true;
+	}
+
+	// トグル操作時に使用するヘルパー。存在すれば削除、無ければ追加する。
+	private boolean toggleSnapshot(SavedStack snapshot) {
+		Identifier key = snapshot.id();
+		if (items.containsKey(key)) {
+			items.remove(key);
+			return false;
+		}
+		items.put(key, snapshot);
+		return true;
+	}
+
 	private synchronized void save() {
-		SerializableData data = new SerializableData(items.stream().map(Identifier::toString).toList());
+		List<SavedStack.Serialized> serialized = items.values().stream()
+			.map(SavedStack::toSerialized)
+			.toList();
+		SerializableData data = new SerializableData(serialized);
 		try {
 			Files.createDirectories(configPath.getParent());
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
@@ -182,12 +232,13 @@ public final class CustomTabsManager {
 
 	private static final class SerializableData {
 		private List<String> items;
+		private List<SavedStack.Serialized> entries;
 
 		private SerializableData() {
 		}
 
-		private SerializableData(List<String> items) {
-			this.items = items;
+		private SerializableData(List<SavedStack.Serialized> entries) {
+			this.entries = entries;
 		}
 	}
 }
