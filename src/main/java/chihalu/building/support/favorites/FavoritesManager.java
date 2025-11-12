@@ -28,7 +28,7 @@ public final class FavoritesManager {
 
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath = BuildingSupportStorage.resolve("favorites.json");
-	private final LinkedHashMap<Identifier, SavedStack> favorites = new LinkedHashMap<>();
+	private final LinkedHashMap<String, SavedStack> favorites = new LinkedHashMap<>();
 
 	private FavoritesManager() {
 	}
@@ -53,7 +53,7 @@ public final class FavoritesManager {
 
 			if (data.entries != null && !data.entries.isEmpty()) {
 				for (SavedStack.Serialized entry : data.entries) {
-					SavedStack.fromSerialized(entry).ifPresent(saved -> favorites.put(saved.id(), saved));
+					SavedStack.fromSerialized(entry).ifPresent(saved -> favorites.put(saved.uniqueKey(), saved));
 				}
 				return;
 			}
@@ -74,7 +74,7 @@ public final class FavoritesManager {
 				}
 
 				if (Registries.ITEM.containsId(id)) {
-					SavedStack.fromId(id).ifPresent(saved -> favorites.put(saved.id(), saved));
+					SavedStack.fromId(id).ifPresent(saved -> favorites.put(saved.uniqueKey(), saved));
 				} else {
 					BuildingSupport.LOGGER.warn("存在しないアイテムIDを無視しました: {}", entry);
 				}
@@ -97,7 +97,7 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean removeFavorite(Identifier id) {
-		boolean removed = favorites.remove(id) != null;
+		boolean removed = removeFirstMatching(id);
 		if (removed) {
 			save();
 		}
@@ -105,8 +105,9 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean toggleFavorite(Identifier id) {
-		if (favorites.containsKey(id)) {
-			favorites.remove(id);
+		String existingKey = findKeyByIdentifier(id);
+		if (existingKey != null) {
+			favorites.remove(existingKey);
 			save();
 			return false;
 		}
@@ -114,7 +115,7 @@ public final class FavoritesManager {
 		if (saved.isEmpty()) {
 			return false;
 		}
-		favorites.put(id, saved.get());
+		favorites.put(saved.get().uniqueKey(), saved.get());
 		save();
 		return true;
 	}
@@ -140,11 +141,13 @@ public final class FavoritesManager {
 	}
 
 	public synchronized boolean isFavorite(Identifier id) {
-		return favorites.containsKey(id);
+		return favorites.values().stream().anyMatch(saved -> saved.id().equals(id));
 	}
 
 	public synchronized List<Identifier> getFavoriteIds() {
-		return List.copyOf(favorites.keySet());
+		return favorites.values().stream()
+			.map(SavedStack::id)
+			.toList();
 	}
 
 	public synchronized ItemStack getIconStack() {
@@ -186,21 +189,43 @@ public final class FavoritesManager {
 
 	// 同じIDが二重登録されないように確認しつつ追加するためのヘルパー
 	private boolean putSnapshotIfAbsent(SavedStack snapshot) {
-		if (favorites.containsKey(snapshot.id())) {
+		String key = snapshot.uniqueKey();
+		if (favorites.containsKey(key)) {
 			return false;
 		}
-		favorites.put(snapshot.id(), snapshot);
+		favorites.put(key, snapshot);
 		return true;
 	}
 
-	// 追加済みなら削除、未登録なら追加するトグル処理
+	// ���� ID �ɑ΂��镶���Ԃ��߂̃w���p�[
 	private boolean toggleSnapshot(SavedStack snapshot) {
-		Identifier key = snapshot.id();
+		String key = snapshot.uniqueKey();
 		if (favorites.containsKey(key)) {
 			favorites.remove(key);
 			return false;
 		}
 		favorites.put(key, snapshot);
+		return true;
+	}
+
+	private String findKeyByIdentifier(Identifier id) {
+		if (id == null) {
+			return null;
+		}
+		for (var entry : favorites.entrySet()) {
+			if (entry.getValue().id().equals(id)) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
+
+	private boolean removeFirstMatching(Identifier id) {
+		String key = findKeyByIdentifier(id);
+		if (key == null) {
+			return false;
+		}
+		favorites.remove(key);
 		return true;
 	}
 
@@ -232,3 +257,5 @@ public final class FavoritesManager {
 		}
 	}
 }
+
+

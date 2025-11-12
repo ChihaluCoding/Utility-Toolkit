@@ -287,27 +287,22 @@ public final class HistoryManager {
 			return deque;
 		}
 		SerializableData serializableData = data.get();
+		String targetWorldKey = resolveWorldKeyForSave(serializableData.worldKey, path);
+
 		if (serializableData.entries != null && !serializableData.entries.isEmpty()) {
-			List<SavedStack.Serialized> entries = serializableData.entries;
-			for (int i = entries.size() - 1; i >= 0; i--) {
-				SavedStack.Serialized entry = entries.get(i);
-				SavedStack.fromSerialized(entry).ifPresent(saved -> updateDeque(deque, saved));
+			// entries が存在する場合は保存されている ItemStack をそのまま復元し、欠損があれば後で上書き保存する
+			boolean needsRewrite = appendSerializedEntries(serializableData.entries, deque);
+			if (needsRewrite) {
+				saveHistoryAsync(path, deque, targetWorldKey);
 			}
 			return deque;
 		}
-		if (serializableData.items == null) {
+		if (serializableData.items == null || serializableData.items.isEmpty()) {
 			return deque;
 		}
-		List<String> items = serializableData.items;
-		for (int i = items.size() - 1; i >= 0; i--) {
-			String idString = items.get(i);
-			if (idString == null || idString.isBlank()) {
-				continue;
-			}
-			Identifier id = Identifier.tryParse(idString.trim());
-			if (id != null && Registries.ITEM.containsId(id)) {
-				SavedStack.fromId(id).ifPresent(saved -> updateDeque(deque, saved));
-			}
+		// 旧フォーマット(items配列)から読み取った場合は現在の形式へ書き戻す
+		if (appendLegacyItems(serializableData.items, deque)) {
+			saveHistoryAsync(path, deque, targetWorldKey);
 		}
 		return deque;
 	}
@@ -359,6 +354,69 @@ public final class HistoryManager {
 			BuildingSupport.LOGGER.error("Failed to read history data: {}", path, exception);
 		}
 		return Optional.empty();
+	}
+
+	private boolean appendSerializedEntries(List<SavedStack.Serialized> entries, Deque<SavedStack> deque) {
+		// 保存済みエントリを新しいデータ構造へ流し込みつつ、不足や破損を検知する
+		boolean needsRewrite = false;
+		for (int i = entries.size() - 1; i >= 0; i--) {
+			SavedStack.Serialized entry = entries.get(i);
+			if (entry == null) {
+				needsRewrite = true;
+				continue;
+			}
+			boolean hasSerializedStack = (entry.stack != null && !entry.stack.isJsonNull())
+				|| (entry.nbt != null && !entry.nbt.isBlank());
+			if (!hasSerializedStack) {
+				needsRewrite = true;
+			}
+			boolean added = SavedStack.fromSerialized(entry).map(saved -> {
+				updateDeque(deque, saved);
+				return true;
+			}).orElse(false);
+			if (!added) {
+				needsRewrite = true;
+			}
+		}
+		return needsRewrite;
+	}
+
+	private boolean appendLegacyItems(List<String> items, Deque<SavedStack> deque) {
+		// 旧データのID一覧を ItemStack に変換して履歴へ加える
+		boolean migrated = false;
+		for (int i = items.size() - 1; i >= 0; i--) {
+			String idString = items.get(i);
+			if (idString == null || idString.isBlank()) {
+				continue;
+			}
+			Identifier id = Identifier.tryParse(idString.trim());
+			if (id == null || !Registries.ITEM.containsId(id)) {
+				BuildingSupport.LOGGER.warn("履歴に復元できないアイテムIDを検出しました: {}", idString);
+				continue;
+			}
+			if (SavedStack.fromId(id).map(saved -> {
+				updateDeque(deque, saved);
+				return true;
+			}).orElse(false)) {
+				migrated = true;
+			}
+		}
+		return migrated;
+	}
+
+	private String resolveWorldKeyForSave(String storedKey, Path path) {
+		// worldKey が空の場合はファイル情報から識別子を推測して保存時に利用する
+		if (storedKey != null && !storedKey.isBlank()) {
+			return storedKey;
+		}
+		if (path.equals(getGlobalHistoryPath())) {
+			return GLOBAL_HISTORY_WORLD_KEY;
+		}
+		String fileName = path.getFileName().toString();
+		if (fileName.endsWith(".json")) {
+			fileName = fileName.substring(0, fileName.length() - 5);
+		}
+		return fileName.isBlank() ? DEFAULT_WORLD_KEY : fileName;
 	}
 
 	private static void updateDeque(Deque<SavedStack> deque, SavedStack snapshot) {

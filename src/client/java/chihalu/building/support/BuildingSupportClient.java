@@ -37,6 +37,7 @@ import chihalu.building.support.favorites.FavoritesManager;
 import chihalu.building.support.history.HistoryManager;
 import chihalu.building.support.mixin.client.CreativeInventoryScreenInvoker;
 import chihalu.building.support.mixin.client.HandledScreenAccessor;
+import chihalu.building.support.storage.SavedStack;
 
 public class BuildingSupportClient implements ClientModInitializer {
 	private static final KeyBinding.Category FAVORITE_CATEGORY = KeyBinding.Category.create(BuildingSupport.id("favorites"));
@@ -101,6 +102,9 @@ public class BuildingSupportClient implements ClientModInitializer {
 
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			client.execute(() -> {
+				if (handler != null) {
+					SavedStack.updateLookup(handler.getRegistryManager());
+				}
 				currentWorldKey = resolveWorldKey(client, handler);
 				HistoryManager.getInstance().setActiveWorldKey(currentWorldKey);
 				List<ItemStack> historyStacks = updateHistoryGroupStacks();
@@ -112,6 +116,7 @@ public class BuildingSupportClient implements ClientModInitializer {
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			client.execute(() -> {
+				SavedStack.resetLookup();
 				currentWorldKey = null;
 				HistoryManager.getInstance().setActiveWorldKey(null);
 				BuildingSupportClient.onHistoryModeChanged();

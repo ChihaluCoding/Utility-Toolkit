@@ -9,6 +9,9 @@ import com.mojang.serialization.JsonOps;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryOps;
@@ -21,15 +24,18 @@ import chihalu.building.support.BuildingSupport;
  * 装飾や染色などの追加データを含んだ ItemStack を安全に保存・復元するためのスナップショット。
  */
 public final class SavedStack {
-	private static final RegistryWrapper.WrapperLookup WRAPPER_LOOKUP = BuiltinRegistries.createWrapperLookup();
-	private static final RegistryOps<JsonElement> JSON_OPS = RegistryOps.of(JsonOps.INSTANCE, WRAPPER_LOOKUP);
+	private static volatile RegistryWrapper.WrapperLookup CURRENT_LOOKUP = BuiltinRegistries.createWrapperLookup();
+	private static volatile RegistryOps<NbtElement> NBT_OPS = RegistryOps.of(NbtOps.INSTANCE, CURRENT_LOOKUP);
+	private static volatile RegistryOps<JsonElement> JSON_OPS = RegistryOps.of(JsonOps.INSTANCE, CURRENT_LOOKUP);
 
 	private final Identifier id;
 	private final ItemStack stack;
+	private final String uniqueKey;
 
 	private SavedStack(Identifier id, ItemStack stack) {
 		this.id = id;
 		this.stack = stack.copy();
+		this.uniqueKey = buildUniqueKey(this.id, this.stack);
 	}
 
 	/**
@@ -68,6 +74,12 @@ public final class SavedStack {
 		if (identifier == null || !Registries.ITEM.containsId(identifier)) {
 			return Optional.empty();
 		}
+		if (form.nbt != null && !form.nbt.isBlank()) {
+			ItemStack decoded = decodeStack(form.nbt);
+			if (!decoded.isEmpty()) {
+				return Optional.of(new SavedStack(identifier, decoded));
+			}
+		}
 		if (form.stack != null && !form.stack.isJsonNull()) {
 			ItemStack decoded = decodeStack(form.stack);
 			if (!decoded.isEmpty()) {
@@ -77,13 +89,29 @@ public final class SavedStack {
 		return Optional.of(new SavedStack(identifier, new ItemStack(Registries.ITEM.get(identifier))));
 	}
 
+	private static String buildUniqueKey(Identifier id, ItemStack stack) {
+		String nbtString = encodeStackNbt(stack);
+		if (nbtString != null && !nbtString.isBlank()) {
+			return id + "#" + nbtString;
+		}
+		JsonElement json = encodeStack(stack);
+		String jsonString = json.isJsonNull() ? "" : json.toString();
+		if (!jsonString.isBlank()) {
+			return id + "#" + jsonString;
+		}
+		return id.toString();
+	}
+
+
 	/**
 	 * Gson 経由でシリアライズ可能なフォームへ変換する。
 	 */
 	public Serialized toSerialized() {
 		Serialized serialized = new Serialized();
 		serialized.id = id.toString();
+		// すべての保存データをJSONとSNBTの両方で維持し、どの環境でも装飾情報を安全に再現する
 		serialized.stack = encodeStack(stack);
+		serialized.nbt = encodeStackNbt(stack);
 		return serialized;
 	}
 
@@ -95,26 +123,72 @@ public final class SavedStack {
 	}
 
 	/**
+	 * ���ݒ��Ƀ}�l�[�W���̈ꗗ���A�t�H�g�o�[�g���𐧌䂷�邽�߂ɒ������l�B
+	 */
+	public String uniqueKey() {
+		return uniqueKey;
+	}
+
+	/**
 	 * スナップショットが保持している Item の Identifier を返す。
 	 */
 	public Identifier id() {
 		return id;
 	}
 
+	public static synchronized void updateLookup(RegistryWrapper.WrapperLookup lookup) {
+		if (lookup == null) {
+			return;
+		}
+		CURRENT_LOOKUP = lookup;
+		NBT_OPS = RegistryOps.of(NbtOps.INSTANCE, CURRENT_LOOKUP);
+		JSON_OPS = RegistryOps.of(JsonOps.INSTANCE, CURRENT_LOOKUP);
+		BuildingSupport.LOGGER.debug("SavedStack registry lookup updated: {}", lookup);
+	}
+
+	public static synchronized void resetLookup() {
+		updateLookup(BuiltinRegistries.createWrapperLookup());
+	}
+
 	private static JsonElement encodeStack(ItemStack stack) {
 		DataResult<JsonElement> result = ItemStack.CODEC.encodeStart(JSON_OPS, stack.copy());
-		return result.result().orElseGet(() -> {
-			BuildingSupport.LOGGER.warn("ItemStack のシリアライズに失敗したため、ベースIDのみ保存します: {}", stack);
-			return JsonNull.INSTANCE;
-		});
+		if (result.result().isEmpty()) {
+			String error = result.error().map(partial -> partial.message()).orElse("unknown");
+			BuildingSupport.LOGGER.warn("ItemStack JSON のエンコードに失敗しました: {} / {}", stack, error);
+		}
+		return result.result().orElse(JsonNull.INSTANCE);
+	}
+
+	private static String encodeStackNbt(ItemStack stack) {
+		DataResult<NbtElement> result = ItemStack.CODEC.encodeStart(NBT_OPS, stack.copy());
+		if (result.result().isEmpty()) {
+			String error = result.error().map(partial -> partial.message()).orElse("unknown");
+			BuildingSupport.LOGGER.warn("Failed to encode ItemStack NBT for {}: {}", stack, error);
+		}
+		return result.result().map(NbtElement::toString).orElse("");
 	}
 
 	private static ItemStack decodeStack(JsonElement element) {
 		DataResult<ItemStack> result = ItemStack.CODEC.parse(JSON_OPS, element);
-		return result.result().map(ItemStack::copy).orElseGet(() -> {
-			BuildingSupport.LOGGER.warn("ItemStack の復元に失敗したため、空のスタックを返します: {}", element);
+		if (result.result().isEmpty()) {
+			String error = result.error().map(partial -> partial.message()).orElse("unknown");
+			BuildingSupport.LOGGER.warn("Failed to decode ItemStack from JSON: {}", error);
+		}
+		return result.result().map(ItemStack::copy).orElse(ItemStack.EMPTY);
+	}
+
+	private static ItemStack decodeStack(String nbtString) {
+		if (nbtString == null || nbtString.isBlank()) {
 			return ItemStack.EMPTY;
-		});
+		}
+		try {
+			NbtElement element = StringNbtReader.fromOps(NbtOps.INSTANCE).read(nbtString);
+			DataResult<ItemStack> result = ItemStack.CODEC.parse(NBT_OPS, element);
+			return result.result().map(ItemStack::copy).orElse(ItemStack.EMPTY);
+		} catch (Exception exception) {
+			BuildingSupport.LOGGER.warn("ItemStack の復元処理で例外が発生したため、空のスタックを返します: {}", nbtString, exception);
+			return ItemStack.EMPTY;
+		}
 	}
 
 	/**
@@ -123,6 +197,7 @@ public final class SavedStack {
 	public static final class Serialized {
 		public String id;
 		public JsonElement stack;
+		public String nbt;
 	}
 
 }

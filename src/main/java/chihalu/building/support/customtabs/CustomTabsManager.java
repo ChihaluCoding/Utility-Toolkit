@@ -34,7 +34,7 @@ public final class CustomTabsManager {
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private final Path configPath = BuildingSupportStorage.resolve("custom_tabs.json");
 
-	private final LinkedHashMap<Identifier, SavedStack> items = new LinkedHashMap<>();
+	private final LinkedHashMap<String, SavedStack> items = new LinkedHashMap<>();
 	private ItemGroup registeredGroup;
 
 	private CustomTabsManager() {
@@ -55,24 +55,19 @@ public final class CustomTabsManager {
 				return;
 			}
 			if (data.entries != null && !data.entries.isEmpty()) {
-				for (SavedStack.Serialized entry : data.entries) {
-					SavedStack.fromSerialized(entry).ifPresent(saved -> items.put(saved.id(), saved));
+				// JSONに保存されたスタック情報をそのまま読み込み、欠落があれば後で再保存して補完する
+				boolean needsRewrite = loadSerializedEntries(data.entries);
+				if (needsRewrite) {
+					save();
 				}
 				return;
 			}
-			if (data.items == null) {
+			if (data.items == null || data.items.isEmpty()) {
 				return;
 			}
-			for (String rawId : data.items) {
-				if (rawId == null || rawId.isBlank()) {
-					continue;
-				}
-				Identifier id = Identifier.tryParse(rawId.trim());
-				if (!isValidItem(id)) {
-					BuildingSupport.LOGGER.warn("無効なカスタムタブ用IDを検出しました: {}", rawId);
-					continue;
-				}
-				SavedStack.fromId(id).ifPresent(saved -> items.put(saved.id(), saved));
+			// 旧フォーマット(items配列のみ)の場合はIDだけを頼りに現在の表現へ移行する
+			if (migrateLegacyItems(data.items)) {
+				save();
 			}
 		} catch (IOException | JsonSyntaxException exception) {
 			BuildingSupport.LOGGER.error("custom_tabs.json の読み込みに失敗しました: {}", configPath, exception);
@@ -103,7 +98,7 @@ public final class CustomTabsManager {
 	}
 
 	public synchronized boolean removeItem(Identifier id) {
-		boolean removed = items.remove(id) != null;
+		boolean removed = removeFirstMatching(id);
 		if (removed) {
 			save();
 		}
@@ -114,8 +109,9 @@ public final class CustomTabsManager {
 		if (!isValidItem(id)) {
 			return false;
 		}
-		if (items.containsKey(id)) {
-			items.remove(id);
+		String existingKey = findKeyByIdentifier(id);
+		if (existingKey != null) {
+			items.remove(existingKey);
 			save();
 			return false;
 		}
@@ -123,7 +119,7 @@ public final class CustomTabsManager {
 		if (saved.isEmpty()) {
 			return false;
 		}
-		items.put(id, saved.get());
+		items.put(saved.get().uniqueKey(), saved.get());
 		save();
 		return true;
 	}
@@ -148,7 +144,9 @@ public final class CustomTabsManager {
 	}
 
 	public synchronized List<Identifier> getItems() {
-		return List.copyOf(items.keySet());
+		return items.values().stream()
+			.map(SavedStack::id)
+			.toList();
 	}
 
 	public synchronized ItemStack getIconStack() {
@@ -195,23 +193,85 @@ public final class CustomTabsManager {
 		return id != null && Registries.ITEM.containsId(id);
 	}
 
+	private boolean loadSerializedEntries(List<SavedStack.Serialized> entries) {
+		// entries一覧を順序通りに復元しつつ、スタック情報が欠けていないか確認する
+		boolean needsRewrite = false;
+		for (SavedStack.Serialized entry : entries) {
+			if (entry == null) {
+				continue;
+			}
+			boolean hasSerializedStack = (entry.stack != null && !entry.stack.isJsonNull())
+				|| (entry.nbt != null && !entry.nbt.isBlank());
+			if (!hasSerializedStack) {
+				needsRewrite = true;
+			}
+			SavedStack.fromSerialized(entry).ifPresent(saved -> items.put(saved.uniqueKey(), saved));
+		}
+		return needsRewrite;
+	}
+
+	private boolean migrateLegacyItems(List<String> legacyItems) {
+		// 旧データのID群を SavedStack に変換して現在の形式へ差し替える
+		boolean migrated = false;
+		for (String rawId : legacyItems) {
+			if (rawId == null || rawId.isBlank()) {
+				continue;
+			}
+			Identifier id = Identifier.tryParse(rawId.trim());
+			if (!isValidItem(id)) {
+				BuildingSupport.LOGGER.warn("カスタムタブに追加できないIDを検出しました: {}", rawId);
+				continue;
+			}
+			if (SavedStack.fromId(id).map(saved -> {
+				items.put(saved.uniqueKey(), saved);
+				return true;
+			}).orElse(false)) {
+				migrated = true;
+			}
+		}
+		return migrated;
+	}
+
 	// 既に登録済みかどうかを確認しつつスナップショットを保持する
+	// ID単位での登録状態を維持するヘルパー
 	private boolean putSnapshotIfAbsent(SavedStack snapshot) {
-		if (items.containsKey(snapshot.id())) {
+		String key = snapshot.uniqueKey();
+		if (items.containsKey(key)) {
 			return false;
 		}
-		items.put(snapshot.id(), snapshot);
+		items.put(key, snapshot);
 		return true;
 	}
 
-	// トグル操作時に使用するヘルパー。存在すれば削除、無ければ追加する。
+	// 実際の見た目単位でトグルするヘルパー
 	private boolean toggleSnapshot(SavedStack snapshot) {
-		Identifier key = snapshot.id();
+		String key = snapshot.uniqueKey();
 		if (items.containsKey(key)) {
 			items.remove(key);
 			return false;
 		}
 		items.put(key, snapshot);
+		return true;
+	}
+
+	private String findKeyByIdentifier(Identifier id) {
+		if (id == null) {
+			return null;
+		}
+		for (var entry : items.entrySet()) {
+			if (entry.getValue().id().equals(id)) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
+
+	private boolean removeFirstMatching(Identifier id) {
+		String key = findKeyByIdentifier(id);
+		if (key == null) {
+			return false;
+		}
+		items.remove(key);
 		return true;
 	}
 
@@ -242,3 +302,4 @@ public final class CustomTabsManager {
 		}
 	}
 }
+

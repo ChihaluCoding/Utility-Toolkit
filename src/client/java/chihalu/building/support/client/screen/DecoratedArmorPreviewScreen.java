@@ -84,7 +84,7 @@ public class DecoratedArmorPreviewScreen extends Screen {
 		if (click.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT && dragging) {
 			double diff = click.x() - lastDragX;
 			lastDragX = click.x();
-			rotationOffset += (float) diff * 0.8f; // ドラッグ量をそのまま回転角に反映
+			rotationOffset -= (float) diff * 0.8f; // ドラッグ方向と回転方向を合わせるため符号を反転
 			return true;
 		}
 		return super.mouseDragged(click, offsetX, offsetY);
