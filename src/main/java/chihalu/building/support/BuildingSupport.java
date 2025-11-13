@@ -44,6 +44,7 @@ import chihalu.building.support.itemgroup.StoneBuildingItems;
 import chihalu.building.support.itemgroup.TrimmedArmorItems;
 import chihalu.building.support.itemgroup.WoodBuildingItems;
 import chihalu.building.support.village.VillageSpawnManager;
+import chihalu.building.support.network.CarpetPlacementMode;
 import chihalu.building.support.world.WorldSettingsController;
 
 public class BuildingSupport implements ModInitializer {
@@ -81,6 +82,7 @@ public class BuildingSupport implements ModInitializer {
 		MemoManager.getInstance().reload();
 		HistoryManager.getInstance().initialize();
 		VillageSpawnManager.getInstance().initialize();
+		CarpetPlacementMode.initServer();
 		WorldSettingsController.init();
 		registerItemGroups(favoritesManager, customTabsManager);
 		registerCommands(presetManager);

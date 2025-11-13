@@ -189,6 +189,7 @@ public class BuildingSupportConfigScreen extends Screen {
 		currentCategory = Category.OPTIMIZATION;
 		clearScreen();
 		int leftX = getLeftColumnX();
+		int rightX = getRightColumnX();
 		int startY = height / 2 - 10;
 		var config = BuildingSupportConfig.getInstance();
 
@@ -202,6 +203,17 @@ public class BuildingSupportConfigScreen extends Screen {
 				});
 		disableSignInput.setTooltip(Tooltip.of(Text.translatable("config.utility-toolkit.disable_sign_edit_screen.tooltip")));
 		addDrawableChild(disableSignInput);
+
+		CyclingButtonWidget<Boolean> carpetStringToggle = CyclingButtonWidget.onOffBuilder(config.isAutoCarpetStringEnabled())
+			.build(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
+				Text.translatable("config.utility-toolkit.auto_carpet_string"),
+				(button, value) -> {
+					BuildingSupportConfig.getInstance().setAutoCarpetStringEnabled(value);
+					button.setFocused(false);
+					setFocused(null);
+				});
+		carpetStringToggle.setTooltip(Tooltip.of(Text.translatable("config.utility-toolkit.auto_carpet_string.tooltip")));
+		addDrawableChild(carpetStringToggle);
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.back_to_categories"),
 			button -> {
@@ -382,7 +394,7 @@ public class BuildingSupportConfigScreen extends Screen {
 			CyclingButtonWidget.<BuildingSupportConfig.HistoryDisplayMode>builder(mode -> Text.translatable(mode.translationKey()))
 				.values(BuildingSupportConfig.HistoryDisplayMode.values())
 				.initially(config.getHistoryDisplayMode())
-				.build(leftX, startY, BUTTON_WIDTH, BUTTON_HEIGHT,
+				.build(getLeftColumnX(), startY, BUTTON_WIDTH, BUTTON_HEIGHT,
 					Text.translatable("config.utility-toolkit.history_display_mode"),
 					(button, value) -> {
 						BuildingSupportConfig.getInstance().setHistoryDisplayMode(value);
@@ -399,7 +411,7 @@ public class BuildingSupportConfigScreen extends Screen {
 					client.setScreen(new HistoryResetScreen(this));
 				}
 			})
-			.dimensions(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
+			.dimensions(getRightColumnX(), startY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.open_tab_list"),
@@ -433,8 +445,6 @@ public class BuildingSupportConfigScreen extends Screen {
 		currentCategory = Category.INVENTORY_TAB_TOGGLE;
 		clearScreen();
 		tabToggleBreadcrumbText = Text.translatable("config.utility-toolkit.inventory_control.tab_path");
-		int leftX = getLeftColumnX();
-		int rightX = getRightColumnX();
 
 		List<CyclingButtonWidget<Boolean>> toggleWidgets = new ArrayList<>();
 		var config = BuildingSupportConfig.getInstance();
@@ -465,15 +475,12 @@ public class BuildingSupportConfigScreen extends Screen {
 			addDrawableChild(tabToggleList);
 
 			int controlButtonY = Math.max(ROW_SPACING, listTop - ROW_SPACING * 2);
-			int allOnX = width / 2 - BUTTON_WIDTH - COLUMN_SPACING / 2;
-			int allOffX = width / 2 + COLUMN_SPACING / 2;
-
 			addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.toggle_all_on"),
 				button -> {
 					setAllTabVisibility(true);
 					openInventoryTabToggleList();
 				})
-				.dimensions(allOnX, controlButtonY, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.dimensions(width / 2 - BUTTON_WIDTH - COLUMN_SPACING / 2, controlButtonY, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
 
 			addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.inventory_control.toggle_all_off"),
@@ -481,7 +488,7 @@ public class BuildingSupportConfigScreen extends Screen {
 					setAllTabVisibility(false);
 					openInventoryTabToggleList();
 				})
-				.dimensions(allOffX, controlButtonY, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.dimensions(width / 2 + COLUMN_SPACING / 2, controlButtonY, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.build());
 		}
 

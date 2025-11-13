@@ -94,6 +94,8 @@
   "config.utility-toolkit.potted_pick_prefers_pot": "植木鉢の取得優先度変更",
   "config.utility-toolkit.disable_sign_edit_screen": "看板設置時に入力画面を開かない",
   "config.utility-toolkit.disable_sign_edit_screen.tooltip": "看板を設置した直後に開く入力画面をスキップします。WorldEditなどと併用する際の誤操作防止に役立ちます。",
+  "config.utility-toolkit.auto_carpet_string": "カーペット下に糸を自動配置",
+  "config.utility-toolkit.auto_carpet_string.tooltip": "カーペットを設置した際、その下の空気ブロックに糸(トリップワイヤー)を自動で敷きます。",
 
   "config.utility-toolkit.world.fixed_time.toggle": "時間を固定",
   "config.utility-toolkit.world.fixed_time.value_label": "固定する時間（0〜23999）",

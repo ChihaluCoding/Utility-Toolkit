@@ -29,6 +29,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.WorldSavePath;
 import org.lwjgl.glfw.GLFW;
 
+import chihalu.building.support.client.CarpetPlacementModeClient;
 import chihalu.building.support.client.screen.DecoratedArmorPreviewScreen;
 import chihalu.building.support.config.BuildingSupportConfig;
 import chihalu.building.support.config.BuildingSupportConfig.ItemGroupOption;
@@ -124,6 +125,7 @@ public class BuildingSupportClient implements ClientModInitializer {
 		});
 
 		InventoryTabVisibilityController.reloadFromConfig();
+		CarpetPlacementModeClient.init();
 
 	}
 

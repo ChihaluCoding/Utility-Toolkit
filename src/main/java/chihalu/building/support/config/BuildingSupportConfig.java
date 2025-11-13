@@ -36,6 +36,7 @@ public final class BuildingSupportConfig {
 	private boolean preventIceMelting = false;
 	private boolean preventHazardFireSpread = false;
 	private boolean autoLightCandles = false;
+	private boolean autoCarpetStringEnabled = false;
 	private boolean villageSpawnEnabled = false;
 	private HistoryDisplayMode historyDisplayMode = HistoryDisplayMode.PER_WORLD;
 	private VillageSpawnType villageSpawnType = VillageSpawnType.PLAINS;
@@ -71,6 +72,7 @@ public final class BuildingSupportConfig {
 				this.preventIceMelting = data.preventIceMelting;
 				this.preventHazardFireSpread = data.preventHazardFireSpread;
 				this.autoLightCandles = data.autoLightCandles;
+				this.autoCarpetStringEnabled = data.autoCarpetStringEnabled;
 				this.villageSpawnEnabled = data.villageSpawnEnabled;
 				this.historyDisplayMode = data.historyDisplayMode == null ? HistoryDisplayMode.PER_WORLD : data.historyDisplayMode;
 				this.villageSpawnType = VillageSpawnType.byId(data.villageSpawnType);
@@ -109,7 +111,8 @@ public final class BuildingSupportConfig {
 				fixedTimeEnabled,
 				fixedTimeValue,
 				fixedWeatherEnabled,
-				fixedWeatherMode
+				fixedWeatherMode,
+				autoCarpetStringEnabled
 			);
 			try (Writer writer = Files.newBufferedWriter(configPath, StandardCharsets.UTF_8)) {
 				gson.toJson(data, writer);
@@ -154,6 +157,17 @@ public final class BuildingSupportConfig {
 	public synchronized void setAutoLightCandlesEnabled(boolean enabled) {
 		if (this.autoLightCandles != enabled) {
 			this.autoLightCandles = enabled;
+			save();
+		}
+	}
+
+	public synchronized boolean isAutoCarpetStringEnabled() {
+		return autoCarpetStringEnabled;
+	}
+
+	public synchronized void setAutoCarpetStringEnabled(boolean enabled) {
+		if (this.autoCarpetStringEnabled != enabled) {
+			this.autoCarpetStringEnabled = enabled;
 			save();
 		}
 	}
@@ -350,6 +364,7 @@ public final class BuildingSupportConfig {
 		private int fixedTimeValue = 6000;
 		private boolean fixedWeatherEnabled = false;
 		private WeatherMode fixedWeatherMode = WeatherMode.CLEAR;
+		private boolean autoCarpetStringEnabled = false;
 
 		private SerializableData(
 			boolean preventIceMelting,
@@ -367,7 +382,8 @@ public final class BuildingSupportConfig {
 			boolean fixedTimeEnabled,
 			int fixedTimeValue,
 			boolean fixedWeatherEnabled,
-			WeatherMode fixedWeatherMode
+			WeatherMode fixedWeatherMode,
+			boolean autoCarpetStringEnabled
 		) {
 			this.preventIceMelting = preventIceMelting;
 			this.preventHazardFireSpread = preventHazardFireSpread;
@@ -387,6 +403,7 @@ public final class BuildingSupportConfig {
 			this.fixedTimeValue = sanitizeTimeValue(fixedTimeValue);
 			this.fixedWeatherEnabled = fixedWeatherEnabled;
 			this.fixedWeatherMode = fixedWeatherMode == null ? WeatherMode.CLEAR : fixedWeatherMode;
+			this.autoCarpetStringEnabled = autoCarpetStringEnabled;
 		}
 	}
 

@@ -101,6 +101,7 @@ public final class HistoryManager {
 		for (SavedStack saved : source) {
 			ItemStack stack = saved.toItemStack();
 			if (!stack.isEmpty()) {
+				stack.setCount(1);
 				stacks.add(stack);
 			}
 		}
@@ -115,6 +116,7 @@ public final class HistoryManager {
 		for (SavedStack saved : source) {
 			ItemStack stack = saved.toItemStack();
 			if (!stack.isEmpty()) {
+				stack.setCount(1);
 				return stack;
 			}
 		}
