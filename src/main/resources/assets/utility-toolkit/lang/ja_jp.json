@@ -1,102 +1,57 @@
 {
   "itemGroup.utility-toolkit.favorites": "お気に入り",
-
   "itemGroup.utility-toolkit.wood_building": "木材",
-
   "itemGroup.utility-toolkit.stone_building": "石材",
-
   "itemGroup.utility-toolkit.copper_building": "銅",
-
   "itemGroup.utility-toolkit.light_building": "光源",
-
   "itemGroup.utility-toolkit.nether_building": "ネザー",
-
   "itemGroup.utility-toolkit.end_building": "エンド",
-
   "itemGroup.utility-toolkit.sign_shelf": "看板・棚",
-
   "itemGroup.utility-toolkit.history_building": "履歴",
   "itemGroup.utility-toolkit.custom_tab": "カスタムタブ",
-
   "key.utility-toolkit.add_favorite": "お気に入りに追加",
-
   "key.category.utility-toolkit.favorites": "Utility Toolkit",
-
   "message.utility-toolkit.favorite.require_creative": "クリエイティブインベントリを開いているときのみ使用できます。",
-
   "message.utility-toolkit.favorite.no_item": "現在選択しているスロットにアイテムがありません。",
-
   "message.utility-toolkit.favorite.added": "%2$s に %1$s を追加しました。",
-
   "message.utility-toolkit.favorite.removed": "%2$s から %1$s を削除しました。",
-
   "screen.utility-toolkit.preview.title": "装飾プレビュー",
   "screen.utility-toolkit.preview.hint": "マウスドラッグで回転 / Esc で閉じる",
   "screen.utility-toolkit.preview.close": "閉じる",
-
   "message.utility-toolkit.copy_item_id.success": "アイテムID %s をコピーしました。",
-
   "message.utility-toolkit.copy_item_id.no_item": "カーソル上にコピーできるアイテムがありません。",
-
   "command.utility-toolkit.preset.invalid_slot": "スロット番号は 1 以上を指定してください。",
-
   "command.utility-toolkit.preset.invalid_command": "保存するコマンドを入力してください。",
-
   "command.utility-toolkit.preset.added": "スロット %s にプリセット %s を保存しました。",
-
   "command.utility-toolkit.preset.not_found": "スロット %s にプリセットは登録されていません。",
-
   "command.utility-toolkit.preset.removed": "スロット %s のプリセットを削除しました。",
-
   "command.utility-toolkit.preset.list": "登録済みプリセット: %s",
-
   "command.utility-toolkit.preset.list.entry": "[%s] %s",
-
   "command.utility-toolkit.preset.list.empty": "保存されているコマンドはありません。",
-
   "command.utility-toolkit.preset.executed": "プリセット %s を実行しました: %s",
-
   "command.utility-toolkit.village.overworld_only": "このコマンドはオーバーワールドでのみ使用できます。",
-
-
   "command.utility-toolkit.village.teleported": "%s の村にテレポートしました。座標: (%s, %s, %s)",
   "command.utility-toolkit.extinguish.fire.success": "周囲半径 %2$s ブロック内の火を %1$s 個消火しました。",
-
   "command.utility-toolkit.village.no_new": "未訪問の村は見つかりませんでした。",
-
   "config.utility-toolkit.title": "Utility Toolkit 設定",
-
   "config.utility-toolkit.category.environment": "環境設定",
-
   "config.utility-toolkit.category.automation": "自動化設定",
-
   "config.utility-toolkit.category.pick_block_control": "ピックブロック設定",
-
   "config.utility-toolkit.category.spawn": "スポーン設定",
-
   "config.utility-toolkit.category.inventory_control": "インベントリ設定",
   "config.utility-toolkit.category.optimization": "作業効率化設定",
-
   "config.utility-toolkit.category.world_settings": "ワールド設定",
-
   "config.utility-toolkit.prevent_ice_melting": "氷の融解を防止",
-
   "config.utility-toolkit.prevent_ice_melting.tooltip": "オンにすると、氷が周囲の環境で溶けなります。",
-
   "config.utility-toolkit.prevent_hazard_fire_spread": "焚火、マグマ、火による延焼防止",
-
   "config.utility-toolkit.prevent_hazard_fire_spread.tooltip": "焚火やマグマなどから火が燃え広がるのを防ぎ、火打石で点けた箇所だけが燃え続けます。",
-
   "config.utility-toolkit.auto_light_candles": "ろうそくの自動点灯",
-
   "config.utility-toolkit.auto_light_candles.tooltip": "オンにすると、置いただけでろうそくが自動的に点灯します。",
-
   "config.utility-toolkit.potted_pick_prefers_pot": "植木鉢の取得優先度変更",
   "config.utility-toolkit.disable_sign_edit_screen": "看板設置時に入力画面を開かない",
   "config.utility-toolkit.disable_sign_edit_screen.tooltip": "看板を設置した直後に開く入力画面をスキップします。WorldEditなどと併用する際の誤操作防止に役立ちます。",
   "config.utility-toolkit.auto_carpet_string": "カーペット下に糸を自動配置",
   "config.utility-toolkit.auto_carpet_string.tooltip": "カーペットを設置した際、その下の空気ブロックに糸(トリップワイヤー)を自動で敷きます。",
-
   "config.utility-toolkit.world.fixed_time.toggle": "時間を固定",
   "config.utility-toolkit.world.fixed_time.value_label": "固定する時間（0〜23999）",
   "config.utility-toolkit.world.fixed_time.apply": "時間を適用",
@@ -105,189 +60,104 @@
   "config.utility-toolkit.world.weather_mode.clear": "晴れ",
   "config.utility-toolkit.world.weather_mode.rain": "雨",
   "config.utility-toolkit.world.weather_mode.thunder": "雷雨",
-
   "config.utility-toolkit.potted_pick_prefers_pot.tooltip": "オンにすると、花が植わった植木鉢をホイールクリックした際に鉢本体を取得します。スニークしながらホイールクリックすると花を取得します。",
-
   "config.utility-toolkit.spawn.force_village": "ワールド生成時に村へスポーン",
-
   "config.utility-toolkit.spawn.force_village.tooltip": "オンにすると、ワールド生成時に設定したバイオームの村をスポーン地点に設定します。",
-
   "config.utility-toolkit.spawn.village_biome": "バイオーム",
-
   "config.utility-toolkit.spawn.village_biome.plains": "平原の村",
-
   "config.utility-toolkit.spawn.village_biome.desert": "砂漠の村",
-
   "config.utility-toolkit.spawn.village_biome.savanna": "サバンナの村",
-
   "config.utility-toolkit.spawn.village_biome.taiga": "タイガの村",
-
   "config.utility-toolkit.spawn.village_biome.snowy": "雪原の村",
-
   "config.utility-toolkit.back_to_categories": "カテゴリ選択に戻る",
-
   "config.utility-toolkit.history_display_mode": "使用アイテム履歴表示",
-
   "config.utility-toolkit.history_display_mode.per_world": "ワールド別",
-
   "config.utility-toolkit.history_display_mode.all_world": "全ワールド共通",
-
   "config.utility-toolkit.inventory_control.open_tab_list": "タブ表示",
   "config.utility-toolkit.inventory_control.custom_tabs": "カスタムタブ",
-
   "config.utility-toolkit.inventory_control.back_to_inventory": "インベントリ制御に戻る",
-
   "config.utility-toolkit.inventory_control.tab_category": "インベントリ制御 - タブ表示",
   "config.utility-toolkit.custom_tabs.rename_button": "設定を保存",
   "config.utility-toolkit.custom_tabs.name_label": "タブ名",
   "config.utility-toolkit.custom_tabs.icon_label": "タブアイコン",
   "config.utility-toolkit.custom_tabs.icon_hint": "例: minecraft:paper",
-
   "config.utility-toolkit.inventory_control.tab_path": "インベントリ制御 ▶ タブ表示 ▶ 表示 / 非表示切り替え",
-
   "config.utility-toolkit.inventory_control.toggle_all_on": "全てオン",
-
   "config.utility-toolkit.inventory_control.toggle_all_off": "全てオフ",
-
   "command.utility-toolkit.memo.invalid_command": "コマンドが正しくありません。",
-
   "command.utility-toolkit.memo.invalid_note": "メモ名を入力してください。",
   "command.utility-toolkit.memo.add.invalid_format": " /memo add \"メモ名\" \"メモ内容\" の形式で入力してください。",
   "command.utility-toolkit.memo.invalid_content": "コマンドまたはメモ内容を入力してください。",
   "command.utility-toolkit.memo.style.set": "メモリストのスタイルを %s に変更しました。",
   "command.utility-toolkit.memo.added": "メモ「%s」を追加しました。",
-
   "command.utility-toolkit.memo.removed": "メモ「%s」を削除しました。",
-
   "command.utility-toolkit.memo.not_found": "メモ「%s」は登録されていません。",
-
   "command.utility-toolkit.memo.list.header": "メモリスト",
   "command.utility-toolkit.memo.list.header.command": "メモリスト「コマンド」",
   "command.utility-toolkit.memo.list.empty": "通常メモは登録されていません。",
   "command.utility-toolkit.memo.list.empty.command": "コマンドメモは登録されていません。",
   "command.utility-toolkit.memo.list.copy_hint": "クリックするとコマンドをコピーします。",
-
   "message.utility-toolkit.custom_tab.require_creative": "Shift + B はクリエイティブインベントリ内でのみ使用できます。",
   "message.utility-toolkit.custom_tab.no_item": "選択中のスロットにアイテムがありません。",
   "message.utility-toolkit.custom_tab.added": "%2$s に %1$s を追加しました。",
   "message.utility-toolkit.custom_tab.removed": "%2$s から %1$s を削除しました。",
   "command.utility-toolkit.memo.edited": "メモ「%s」を更新しました。",
-
   "command.utility-toolkit.memo.edit.begin": "メモ「%s」を編集中です。",
-
   "command.utility-toolkit.memo.edit.current_command": "現在の内容: ",
-
   "command.utility-toolkit.memo.no_command_label": "（コマンド未設定）",
-
   "command.utility-toolkit.memo.edit.current_note": "現在のメモ: %s",
-
   "command.utility-toolkit.memo.edit.help": " /memo edit <コマンド> \"メモ名\" を入力してください。",
-
   "command.utility-toolkit.memo.edit.before": "変更前 ▶ %s \"%s\"",
-
   "command.utility-toolkit.memo.edit.after": "変更後 ▶ %s \"%s\"",
-
   "command.utility-toolkit.memo.edit.no_session": "先に /memo edit \"メモ名\" を実行して編集を開始してください。",
-
   "command.utility-toolkit.memo.edit.input_empty": "空のメッセージは保存できません。",
-
   "config.utility-toolkit.inventory_tab.favorites": "タブ: お気に入り",
-
   "config.utility-toolkit.inventory_tab.favorites.tooltip": "オンにするとお気に入りタブを表示します",
-
   "config.utility-toolkit.inventory_tab.history": "タブ: 履歴",
-
   "config.utility-toolkit.inventory_tab.history.tooltip": "履歴タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.wood_building": "タブ: 木材",
-
   "config.utility-toolkit.inventory_tab.wood_building.tooltip": "木材タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.stone_building": "タブ: 石材",
-
   "config.utility-toolkit.inventory_tab.stone_building.tooltip": "石材タブの表示 / 非表示を切り替えます。",
-
   "config.utility-toolkit.inventory_tab.copper_building": "タブ: 銅",
-
   "config.utility-toolkit.inventory_tab.copper_building.tooltip": "銅タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.light_building": "タブ: 光源",
-
   "config.utility-toolkit.inventory_tab.light_building.tooltip": "光源タブの表示 / 非表示を切り替えます。",
-
   "config.utility-toolkit.inventory_tab.nether_building": "タブ: ネザー",
-
   "config.utility-toolkit.inventory_tab.nether_building.tooltip": "ネザータブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.end_building": "タブ: エンド",
-
   "config.utility-toolkit.inventory_tab.end_building.tooltip": "エンドタブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.sign_shelf": "タブ: 看板・棚",
-
   "config.utility-toolkit.inventory_tab.sign_shelf.tooltip": "看板・棚タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.armor_leather": "タブ: 防具（革）",
-
   "config.utility-toolkit.inventory_tab.armor_leather.tooltip": "革防具タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.armor_chain": "タブ: 防具（チェーン）",
-
   "config.utility-toolkit.inventory_tab.armor_chain.tooltip": "チェーン防具タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.armor_iron": "タブ: 防具（鉄）",
-
   "config.utility-toolkit.inventory_tab.armor_iron.tooltip": "鉄防具タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.armor_gold": "タブ: 防具（金）",
-
   "config.utility-toolkit.inventory_tab.armor_gold.tooltip": "金防具タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.armor_diamond": "タブ: 防具（ダイヤ）",
-
   "config.utility-toolkit.inventory_tab.armor_diamond.tooltip": "ダイヤ防具タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.inventory_tab.armor_netherite": "タブ: 防具（ネザライト）",
-
   "config.utility-toolkit.inventory_tab.armor_netherite.tooltip": "ネザライト防具タブの表示 / 非表示を切り替えます",
-
   "config.utility-toolkit.history_reset.button": "履歴をリセット",
-
   "config.utility-toolkit.history_reset.title": "履歴リセット",
-
   "config.utility-toolkit.history_reset.current_world": "現在のワールド: %s",
-
   "config.utility-toolkit.history_reset.not_in_world": "ワールドに入ってから実行してください",
-
   "config.utility-toolkit.history_reset.result.not_in_world": "ワールドに入っているときのみリセットできます",
-
   "config.utility-toolkit.history_reset.reset_button": "リセット実行",
-
   "config.utility-toolkit.history_reset.result.world_success": "ワールド履歴をリセットしました",
-
   "config.utility-toolkit.history_reset.result.failure": "履歴のリセットに失敗しました",
-
   "config.utility-toolkit.history_reset.result.global_success": "全ワールド共通履歴をリセットしました",
-
   "config.utility-toolkit.history_reset.target": "リセット対象",
-
   "config.utility-toolkit.history_reset.target.current": "現在のワールド",
-
   "config.utility-toolkit.history_reset.target.all": "全ワールド共通",
-
   "itemGroup.utility-toolkit.equipment.leather": "装備 - 皮装備",
-
   "itemGroup.utility-toolkit.equipment.chain": "装備 - チェーン装備",
-
   "itemGroup.utility-toolkit.equipment.iron": "装備 - 鉄装備",
-
   "itemGroup.utility-toolkit.equipment.gold": "装備 - 金装備",
-
   "itemGroup.utility-toolkit.equipment.diamond": "装備 - ダイヤモンド装備",
-
   "itemGroup.utility-toolkit.equipment.netherite": "装備 - ネザライト装備",
-
   "command.utility-toolkit.memo.no_content_label": "（内容未設定）"
-
 }
-

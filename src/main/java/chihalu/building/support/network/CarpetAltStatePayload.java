@@ -12,9 +12,14 @@ import net.minecraft.network.RegistryByteBuf;
 public record CarpetAltStatePayload(boolean active) implements CustomPayload {
 	public static final CustomPayload.Id<CarpetAltStatePayload> ID = new CustomPayload.Id<>(BuildingSupport.id("carpet_alt_state"));
 	public static final PacketCodec<RegistryByteBuf, CarpetAltStatePayload> CODEC = PacketCodec.of(CarpetAltStatePayload::write, CarpetAltStatePayload::decode);
+	private static boolean registered = false;
 
 	public static void registerType() {
+		if (registered) {
+			return;
+		}
 		PayloadTypeRegistry.playC2S().register(ID, CODEC);
+		registered = true;
 	}
 
 	private static CarpetAltStatePayload decode(RegistryByteBuf buf) {

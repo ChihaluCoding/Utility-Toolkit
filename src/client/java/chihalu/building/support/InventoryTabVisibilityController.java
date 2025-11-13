@@ -51,8 +51,6 @@ public final class InventoryTabVisibilityController {
 	private static final Set<ItemGroup> HIDDEN_GROUPS =
 		java.util.Collections.newSetFromMap(new IdentityHashMap<>());
 
-	private static final List<RegistryKey<ItemGroup>> PRIORITY_ORDER = createPriorityList();
-
 	private InventoryTabVisibilityController() {
 	}
 
@@ -75,8 +73,11 @@ public final class InventoryTabVisibilityController {
 	 * ItemGroups#getGroupsToDisplay() の結果をフィルタして UI に渡す。
 	 */
 	public static List<ItemGroup> filterGroups(List<ItemGroup> original) {
-		if (HIDDEN_GROUPS.isEmpty() || original.isEmpty()) {
-			return reorderByPriority(original, false);
+		if (original.isEmpty()) {
+			return List.of();
+		}
+		if (HIDDEN_GROUPS.isEmpty()) {
+			return List.copyOf(original);
 		}
 		List<ItemGroup> filtered = new ArrayList<>(original.size());
 		for (ItemGroup group : original) {
@@ -84,8 +85,7 @@ public final class InventoryTabVisibilityController {
 				filtered.add(group);
 			}
 		}
-		boolean changed = filtered.size() != original.size();
-		return reorderByPriority(filtered, changed);
+		return List.copyOf(filtered);
 	}
 
 	/**
@@ -105,38 +105,4 @@ public final class InventoryTabVisibilityController {
 		}
 	}
 
-	private static List<ItemGroup> reorderByPriority(List<ItemGroup> current, boolean alreadyCopied) {
-		List<ItemGroup> working = alreadyCopied ? new ArrayList<>(current) : new ArrayList<>(current);
-		List<ItemGroup> reordered = new ArrayList<>(working.size());
-		for (RegistryKey<ItemGroup> key : PRIORITY_ORDER) {
-			ItemGroup group = removeByKey(working, key);
-			if (group != null) {
-				reordered.add(group);
-			}
-		}
-		if (reordered.isEmpty()) {
-			return alreadyCopied ? List.copyOf(current) : current;
-		}
-		reordered.addAll(working);
-		return List.copyOf(reordered);
-	}
-
-	private static ItemGroup removeByKey(List<ItemGroup> list, RegistryKey<ItemGroup> key) {
-		for (int i = 0; i < list.size(); i++) {
-			ItemGroup group = list.get(i);
-			if (Registries.ITEM_GROUP.getKey(group).map(key::equals).orElse(false)) {
-				list.remove(i);
-				return group;
-			}
-		}
-		return null;
-	}
-
-	private static List<RegistryKey<ItemGroup>> createPriorityList() {
-		List<RegistryKey<ItemGroup>> list = new ArrayList<>();
-		list.add(BuildingSupport.HISTORY_ITEM_GROUP_KEY);
-		list.add(BuildingSupport.FAVORITES_ITEM_GROUP_KEY);
-		list.add(BuildingSupport.CUSTOM_TAB_ITEM_GROUP_KEY);
-		return List.copyOf(list);
-	}
 }

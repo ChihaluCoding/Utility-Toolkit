@@ -365,7 +365,6 @@ public final class BuildingSupportConfig {
 		private boolean fixedWeatherEnabled = false;
 		private WeatherMode fixedWeatherMode = WeatherMode.CLEAR;
 		private boolean autoCarpetStringEnabled = false;
-
 		private SerializableData(
 			boolean preventIceMelting,
 			boolean preventHazardFireSpread,
