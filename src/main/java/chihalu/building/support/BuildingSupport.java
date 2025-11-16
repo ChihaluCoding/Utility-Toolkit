@@ -1,6 +1,8 @@
 package chihalu.building.support;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -31,6 +33,7 @@ import chihalu.building.support.command.MemoCommand;
 import chihalu.building.support.command.MemoManager;
 import chihalu.building.support.command.PresetCommand;
 import chihalu.building.support.command.VillageCommand;
+import chihalu.building.support.command.UtilityToolkitHelpCommand;
 import chihalu.building.support.config.BuildingSupportConfig;
 import chihalu.building.support.customtabs.CustomTabsManager;
 import chihalu.building.support.favorites.FavoritesManager;
@@ -45,7 +48,6 @@ import chihalu.building.support.itemgroup.TrimmedArmorItems;
 import chihalu.building.support.itemgroup.WoodBuildingItems;
 import chihalu.building.support.village.VillageSpawnManager;
 import chihalu.building.support.network.CarpetPlacementMode;
-import chihalu.building.support.world.WorldSettingsController;
 
 public class BuildingSupport implements ModInitializer {
 	public static final String MOD_ID = "utility-toolkit";
@@ -74,16 +76,17 @@ public class BuildingSupport implements ModInitializer {
 		BuildingSupportConfig config = BuildingSupportConfig.getInstance();
 		config.reload();
 		FavoritesManager favoritesManager = FavoritesManager.getInstance();
-		favoritesManager.reload();
 		CustomTabsManager customTabsManager = CustomTabsManager.getInstance();
-		customTabsManager.reload();
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+			favoritesManager.reload();
+			customTabsManager.reload();
+		}
 		CommandPresetManager presetManager = CommandPresetManager.getInstance();
 		presetManager.reload();
 		MemoManager.getInstance().reload();
 		HistoryManager.getInstance().initialize();
 		VillageSpawnManager.getInstance().initialize();
 		CarpetPlacementMode.initServer();
-		WorldSettingsController.init();
 		registerItemGroups(favoritesManager, customTabsManager);
 		registerCommands(presetManager);
 		registerEvents();
@@ -215,6 +218,8 @@ public class BuildingSupport implements ModInitializer {
 			VillageCommand.register(dispatcher, registryAccess, VillageSpawnManager.getInstance()));
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			ExtinguishCommand.register(dispatcher, registryAccess));
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+			UtilityToolkitHelpCommand.register(dispatcher));
 	}
 
 	private void registerEvents() {

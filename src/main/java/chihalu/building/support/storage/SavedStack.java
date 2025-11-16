@@ -136,6 +136,14 @@ public final class SavedStack {
 		return id;
 	}
 
+	public boolean isSameStack(SavedStack other) {
+		return other != null && ItemStack.areEqual(stack, other.stack);
+	}
+
+	public boolean matches(ItemStack other) {
+		return other != null && ItemStack.areEqual(stack, other);
+	}
+
 	public static synchronized void updateLookup(RegistryWrapper.WrapperLookup lookup) {
 		if (lookup == null) {
 			return;

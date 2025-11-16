@@ -6,10 +6,9 @@
  "IceBlockMixin",
 		"FrostedIceBlockMixin",
 		"FireBlockMixin",
-		"CandleBlockPlacementMixin",
-		"BlockItemPlacementMixin",
-		"ServerPlayNetworkHandlerMixin",
-		"PlayerInventoryAccessor"
+        "CandleBlockPlacementMixin",
+        "CarpetItemPlacementMixin",
+        "PlayerInventoryAccessor"
  ],
  "injectors": {
   "defaultRequire": 1

@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import chihalu.building.support.BuildingSupport;
 import chihalu.building.support.BuildingSupportStorage;
-import chihalu.building.support.client.ClientNotificationBridge;
 import chihalu.building.support.client.accessor.ItemGroupIconAccessor;
 import chihalu.building.support.config.BuildingSupportConfig;
 import chihalu.building.support.storage.SavedStack;
@@ -34,7 +33,6 @@ import chihalu.building.support.storage.SavedStack;
  */
 public final class CustomTabsManager {
 	public static final CustomTabsManager INSTANCE = new CustomTabsManager();
-	private static final int MAX_SAVE_ATTEMPTS = 3;
 	static {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
@@ -91,10 +89,9 @@ public final class CustomTabsManager {
 			if (migrateLegacyItems(data.items)) {
 				saveAsync();
 			}
-	} catch (IOException | JsonSyntaxException exception) {
-		BuildingSupport.LOGGER.error("custom_tabs.json の読み込みに失敗しました: {}", configPath, exception);
-		notifyLoadFailure();
-	}
+		} catch (IOException | JsonSyntaxException exception) {
+			BuildingSupport.LOGGER.error("custom_tabs.json の読み込みに失敗しました: {}", configPath, exception);
+		}
 	}
 
 	public synchronized void registerGroupInstance(ItemGroup group) {
@@ -306,10 +303,10 @@ public final class CustomTabsManager {
 			return;
 		}
 		List<SavedStack> snapshot = List.copyOf(items);
-		ioExecutor.execute(() -> writeSnapshot(snapshot, 0));
+		ioExecutor.execute(() -> writeSnapshot(snapshot));
 	}
 
-	private void writeSnapshot(List<SavedStack> snapshot, int attempt) {
+	private void writeSnapshot(List<SavedStack> snapshot) {
 		List<SavedStack.Serialized> serialized = snapshot.stream()
 			.map(SavedStack::toSerialized)
 			.toList();
@@ -321,29 +318,7 @@ public final class CustomTabsManager {
 			}
 		} catch (IOException exception) {
 			BuildingSupport.LOGGER.error("custom_tabs.json の保存に失敗しました: {}", configPath, exception);
-			if (attempt < MAX_SAVE_ATTEMPTS - 1 && !shuttingDown.get()) {
-				notifySaveFailure("message.utility-toolkit.custom_tabs.save_failed.retry");
-				ioExecutor.execute(() -> {
-					try {
-						Thread.sleep((attempt + 1) * 1000L);
-					} catch (InterruptedException interruptedException) {
-						Thread.currentThread().interrupt();
-						return;
-					}
-					writeSnapshot(snapshot, attempt + 1);
-				});
-			} else {
-				notifySaveFailure("message.utility-toolkit.custom_tabs.save_failed.final");
-			}
 		}
-	}
-
-	private void notifySaveFailure(String translationKey) {
-		ClientNotificationBridge.notify(translationKey);
-	}
-
-	private void notifyLoadFailure() {
-		ClientNotificationBridge.notify("message.utility-toolkit.custom_tabs.load_failed");
 	}
 
 	private static final class SerializableData {
@@ -358,5 +333,4 @@ public final class CustomTabsManager {
 		}
 	}
 }
-
 

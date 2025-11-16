@@ -32,9 +32,10 @@ public final class PresetCommand {
 					.executes(context -> removePreset(context, presetManager))))
 			.then(CommandManager.literal("list")
 				.executes(context -> listPresets(context.getSource(), presetManager)))
-			.then(CommandManager.argument("slot", StringArgumentType.greedyString())
-				.suggests((context, builder) -> suggestSlots(presetManager, builder))
-				.executes(context -> executePreset(context, presetManager))));
+			.then(CommandManager.literal("exec")
+				.then(CommandManager.argument("slot", StringArgumentType.greedyString())
+					.suggests((context, builder) -> suggestSlots(presetManager, builder))
+					.executes(context -> executePreset(context, presetManager)))));
 	}
 
 	private static int addPreset(CommandContext<ServerCommandSource> context, CommandPresetManager manager) {

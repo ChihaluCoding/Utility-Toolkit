@@ -10,19 +10,22 @@ import net.minecraft.block.CandleCakeBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * カーペットAlt設置時の糸上げと、ケーキ付きキャンドルの自動点灯をBlockItem.placeで処理するMixin。
+ */
 @Mixin(BlockItem.class)
-public abstract class BlockItemPlacementMixin {
+public abstract class CarpetItemPlacementMixin {
 	@Unique
 	private BlockPos utility_toolkit$carpetPlacementPos;
 	@Unique
@@ -36,15 +39,6 @@ public abstract class BlockItemPlacementMixin {
 		utility_toolkit$carpetPlacementPos = null;
 		utility_toolkit$carpetPlacementWasAir = false;
 
-		if (!BuildingSupportConfig.getInstance().isAutoCarpetStringEnabled()) {
-			return;
-		}
-
-		Block block = ((BlockItem) (Object) this).getBlock();
-		if (!block.getDefaultState().isIn(BlockTags.WOOL_CARPETS)) {
-			return;
-		}
-
 		World world = context.getWorld();
 		if (!(world instanceof ServerWorld serverWorld)) {
 			return;
@@ -57,15 +51,19 @@ public abstract class BlockItemPlacementMixin {
 			return;
 		}
 
-		BlockPos placementPos = context.getBlockPos();
-		BlockState beforeState = serverWorld.getBlockState(placementPos);
-		utility_toolkit$carpetPlacementTracked = true;
-		utility_toolkit$carpetPlacementPos = placementPos.toImmutable();
-		utility_toolkit$carpetPlacementWasAir = beforeState.isAir();
+		Block block = ((BlockItem) (Object) this).getBlock();
+		BuildingSupportConfig config = BuildingSupportConfig.getInstance();
+		if (config.isAutoCarpetStringEnabled() && block.getDefaultState().isIn(BlockTags.WOOL_CARPETS)) {
+			BlockPos placementPos = context.getBlockPos();
+			BlockState beforeState = serverWorld.getBlockState(placementPos);
+			utility_toolkit$carpetPlacementTracked = true;
+			utility_toolkit$carpetPlacementPos = placementPos.toImmutable();
+			utility_toolkit$carpetPlacementWasAir = beforeState.isAir();
+		}
 	}
 
 	@Inject(method = "place", at = @At("RETURN"))
-	private void utility_toolkit$autoLightCandleCake(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> cir) {
+	private void utility_toolkit$handlePlacementResult(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> cir) {
 		ActionResult result = cir.getReturnValue();
 		World world = context.getWorld();
 		ServerWorld serverWorld = world instanceof ServerWorld ? (ServerWorld) world : null;
@@ -74,10 +72,11 @@ public abstract class BlockItemPlacementMixin {
 
 		if (serverWorld != null && result.isAccepted() && config.isAutoLightCandlesEnabled()) {
 			BlockState state = serverWorld.getBlockState(placementPos);
-			if (!BuildingSupport.isAutoLightVanillaRestricted() || BuildingSupport.isVanillaBlock(state.getBlock())) {
-				if (state.getBlock() instanceof CandleCakeBlock && state.contains(CandleCakeBlock.LIT) && !state.get(CandleCakeBlock.LIT)) {
-					serverWorld.setBlockState(placementPos, state.with(CandleCakeBlock.LIT, true), Block.NOTIFY_ALL);
-				}
+			if ((!BuildingSupport.isAutoLightVanillaRestricted() || BuildingSupport.isVanillaBlock(state.getBlock()))
+				&& state.getBlock() instanceof CandleCakeBlock
+				&& state.contains(CandleCakeBlock.LIT)
+				&& !state.get(CandleCakeBlock.LIT)) {
+				serverWorld.setBlockState(placementPos, state.with(CandleCakeBlock.LIT, true), Block.NOTIFY_ALL);
 			}
 		}
 

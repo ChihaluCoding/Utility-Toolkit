@@ -1,6 +1,7 @@
 package chihalu.building.support.mixin;
 
 import chihalu.building.support.config.BuildingSupportConfig;
+import chihalu.building.support.init.UtilityToolkitTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FrostedIceBlock;
 import net.minecraft.server.world.ServerWorld;
@@ -15,8 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class FrostedIceBlockMixin {
 	@Inject(method = "scheduledTick", at = @At("HEAD"), cancellable = true)
 	private void utility_toolkit$preventScheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-		if (BuildingSupportConfig.getInstance().isPreventIceMeltingEnabled()) {
-			ci.cancel();
+		if (!BuildingSupportConfig.getInstance().isPreventIceMeltingEnabled()) {
+			return;
 		}
+		if (!state.isIn(UtilityToolkitTags.ICE_PROTECTION_TARGETS)) {
+			return;
+		}
+		ci.cancel();
 	}
 }

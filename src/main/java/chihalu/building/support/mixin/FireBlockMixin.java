@@ -7,7 +7,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import chihalu.building.support.config.BuildingSupportConfig;
+import chihalu.building.support.init.UtilityToolkitTags;
 import net.minecraft.block.FireBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
@@ -24,9 +26,14 @@ public class FireBlockMixin {
 		cancellable = true
 	)
 	private void utility_toolkit$cancelHazardSpread(World world, BlockPos pos, int chance, Random random, int age, CallbackInfo ci) {
-		if (BuildingSupportConfig.getInstance().isHazardFireProtectionEnabled()) {
-			ci.cancel();
+		if (!BuildingSupportConfig.getInstance().isHazardFireProtectionEnabled()) {
+			return;
 		}
+		BlockState fireState = world.getBlockState(pos);
+		if (!fireState.isIn(UtilityToolkitTags.FIRE_PROTECTION_TARGETS)) {
+			return;
+		}
+		ci.cancel();
 	}
 
 	/**
@@ -38,8 +45,12 @@ public class FireBlockMixin {
 		cancellable = true
 	)
 	private void utility_toolkit$zeroBurnChance(WorldView world, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
-		if (BuildingSupportConfig.getInstance().isHazardFireProtectionEnabled()) {
-			cir.setReturnValue(0);
+		if (!BuildingSupportConfig.getInstance().isHazardFireProtectionEnabled()) {
+			return;
 		}
+		if (!world.getBlockState(pos).isIn(UtilityToolkitTags.FIRE_PROTECTION_TARGETS)) {
+			return;
+		}
+		cir.setReturnValue(0);
 	}
 }

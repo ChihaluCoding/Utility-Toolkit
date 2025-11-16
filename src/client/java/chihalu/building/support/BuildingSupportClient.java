@@ -30,6 +30,7 @@ import net.minecraft.util.WorldSavePath;
 import org.lwjgl.glfw.GLFW;
 
 import chihalu.building.support.client.CarpetPlacementModeClient;
+import chihalu.building.support.client.ClientNotificationBridge;
 import chihalu.building.support.client.screen.DecoratedArmorPreviewScreen;
 import chihalu.building.support.config.BuildingSupportConfig;
 import chihalu.building.support.config.BuildingSupportConfig.ItemGroupOption;
@@ -41,8 +42,10 @@ import chihalu.building.support.mixin.client.HandledScreenAccessor;
 import chihalu.building.support.storage.SavedStack;
 
 public class BuildingSupportClient implements ClientModInitializer {
-	private static final KeyBinding.Category FAVORITE_CATEGORY = KeyBinding.Category.create(BuildingSupport.id("favorites"));
+	private static final KeyBinding.Category UTILITY_CATEGORY = KeyBinding.Category.create(BuildingSupport.id("favorites"));
 	private KeyBinding toggleFavoriteKey;
+	private KeyBinding toggleCustomTabKey;
+	private KeyBinding carpetAltModeKey;
 	private static String currentWorldKey = null;
 	public static boolean hasActiveWorld() {
 		return currentWorldKey != null;
@@ -57,37 +60,46 @@ public class BuildingSupportClient implements ClientModInitializer {
 		toggleFavoriteKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.utility-toolkit.add_favorite",
 			InputUtil.Type.KEYSYM,
-			GLFW.GLFW_KEY_B,
-			FAVORITE_CATEGORY
+			GLFW.GLFW_KEY_UNKNOWN,
+			UTILITY_CATEGORY
+		));
+		toggleCustomTabKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+			"key.utility-toolkit.toggle_custom_tab",
+			InputUtil.Type.KEYSYM,
+			GLFW.GLFW_KEY_UNKNOWN,
+			UTILITY_CATEGORY
+		));
+		carpetAltModeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+			"key.utility-toolkit.carpet_alt_mode",
+			InputUtil.Type.KEYSYM,
+			GLFW.GLFW_KEY_UNKNOWN,
+			UTILITY_CATEGORY
 		));
 		ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			ScreenKeyboardEvents.beforeKeyPress(screen).register(new ScreenKeyboardEvents.BeforeKeyPress() {
 				@Override
 				public void beforeKeyPress(net.minecraft.client.gui.screen.Screen currentScreen, KeyInput input) {
-					if (currentScreen instanceof CreativeInventoryScreen creativeScreen && input.isCopy()) {
+					if (currentScreen instanceof CreativeInventoryScreen creativeScreen && isCopyShortcut(input)) {
 						handleCopyItemIdShortcut(client, creativeScreen);
 						return;
 					}
 
-					if (!toggleFavoriteKey.matchesKey(input)) {
-						return;
-					}
-
-					boolean shiftPressed = isShiftDown();
-					if (!(currentScreen instanceof CreativeInventoryScreen creativeScreen)) {
-						if (client.player != null) {
-							String key = shiftPressed
-								? "message.utility-toolkit.custom_tab.require_creative"
-								: "message.utility-toolkit.favorite.require_creative";
-							client.player.sendMessage(Text.translatable(key), false);
+					if (toggleFavoriteKey.matchesKey(input)) {
+						if (currentScreen instanceof CreativeInventoryScreen creativeScreen) {
+							handleToggleFavorite(client, creativeScreen);
+						} else if (client.player != null) {
+							client.player.sendMessage(Text.translatable("message.utility-toolkit.favorite.require_creative"), false);
 						}
 						return;
 					}
 
-					if (shiftPressed) {
-						handleToggleCustomTab(client, creativeScreen);
-					} else {
-						handleToggleFavorite(client, creativeScreen);
+					if (toggleCustomTabKey.matchesKey(input)) {
+						if (currentScreen instanceof CreativeInventoryScreen creativeScreen) {
+							handleToggleCustomTab(client, creativeScreen);
+						} else if (client.player != null) {
+							client.player.sendMessage(Text.translatable("message.utility-toolkit.custom_tab.require_creative"), false);
+						}
+						return;
 					}
 				}
 			});
@@ -106,6 +118,8 @@ public class BuildingSupportClient implements ClientModInitializer {
 				if (handler != null) {
 					SavedStack.updateLookup(handler.getRegistryManager());
 				}
+				FavoritesManager.getInstance().reload();
+				CustomTabsManager.getInstance().reload();
 				currentWorldKey = resolveWorldKey(client, handler);
 				HistoryManager.getInstance().setActiveWorldKey(currentWorldKey);
 				List<ItemStack> historyStacks = updateHistoryGroupStacks();
@@ -125,7 +139,20 @@ public class BuildingSupportClient implements ClientModInitializer {
 		});
 
 		InventoryTabVisibilityController.reloadFromConfig();
-		CarpetPlacementModeClient.init();
+		CarpetPlacementModeClient.init(carpetAltModeKey);
+		ClientNotificationBridge.setHandler(translationKey -> {
+			MinecraftClient client = MinecraftClient.getInstance();
+			if (client == null) {
+				return;
+			}
+			client.execute(() -> {
+				if (client.player != null) {
+					client.player.sendMessage(Text.translatable(translationKey), false);
+				} else {
+					BuildingSupport.LOGGER.warn("クライアント通知を保留しました: {}", translationKey);
+				}
+			});
+		});
 
 	}
 
@@ -246,16 +273,11 @@ public class BuildingSupportClient implements ClientModInitializer {
 		return true;
 	}
 
-	private static boolean isShiftDown() {
-		MinecraftClient client = MinecraftClient.getInstance();
-		if (client == null || client.getWindow() == null) {
-			return false;
-		}
-		return InputUtil.isKeyPressed(client.getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)
-			|| InputUtil.isKeyPressed(client.getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+	// Ctrlキーの押下状態をまとめて確認するヘルパー
+	private static boolean isCopyShortcut(KeyInput input) {
+		return input.key() == GLFW.GLFW_KEY_C && isControlDown();
 	}
 
-	// Ctrlキーの押下状態をまとめて確認するヘルパー
 	private static boolean isControlDown() {
 		MinecraftClient client = MinecraftClient.getInstance();
 		if (client == null || client.getWindow() == null) {

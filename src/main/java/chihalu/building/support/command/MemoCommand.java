@@ -3,6 +3,7 @@ package chihalu.building.support.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -35,35 +36,46 @@ public final class MemoCommand {
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, MemoManager memoManager) {
 		ensureSessionCleanupHook();
-		dispatcher.register(CommandManager.literal("memo")
-			.requires(source -> source.hasPermissionLevel(0))
-			.then(CommandManager.literal("add")
-				.then(CommandManager.argument("command", StringArgumentType.greedyString())
-					.suggests((context, builder) -> suggestCommands(dispatcher, context, builder))
-					.executes(context -> addMemo(context, memoManager))))
-			.then(CommandManager.literal("remove")
-				.then(CommandManager.argument("note", StringArgumentType.greedyString())
-					.suggests((context, builder) -> suggestNotes(memoManager, builder))
-					.executes(context -> removeMemo(context, memoManager))))
-			.then(CommandManager.literal("edit")
-				.then(CommandManager.argument("payload", StringArgumentType.greedyString())
-					.suggests((context, builder) -> suggestEditPayload(dispatcher, memoManager, context, builder))
-					.executes(context -> editMemo(context, memoManager))))
-			.then(CommandManager.literal("list")
-				.executes(context -> listMemos(context.getSource(), memoManager, false))
-				.then(CommandManager.literal("cmd")
-					.executes(context -> listMemos(context.getSource(), memoManager, true))))
-			.then(CommandManager.literal("style")
-				.then(CommandManager.argument("value", IntegerArgumentType.integer(1, 3))
-					.executes(context -> setStyle(
-						context.getSource(),
-						memoManager,
-						IntegerArgumentType.getInteger(context, "value")
-					)))));
+		LiteralArgumentBuilder<ServerCommandSource> memoRoot = CommandManager.literal("memo")
+			.requires(source -> source.hasPermissionLevel(0));
+
+		memoRoot.then(CommandManager.literal("add")
+			.then(CommandManager.argument("command", StringArgumentType.greedyString())
+				.suggests((context, builder) -> suggestCommands(dispatcher, context, builder))
+				.executes(context -> addMemo(context, memoManager))));
+		memoRoot.then(CommandManager.literal("remove")
+			.then(CommandManager.argument("note", StringArgumentType.greedyString())
+				.suggests((context, builder) -> suggestNotes(memoManager, builder))
+				.executes(context -> removeMemo(context, memoManager))));
+		memoRoot.then(CommandManager.literal("edit")
+			.then(CommandManager.argument("payload", StringArgumentType.greedyString())
+				.suggests((context, builder) -> suggestEditPayload(dispatcher, memoManager, context, builder))
+				.executes(context -> editMemo(context, memoManager))));
+		memoRoot.then(CommandManager.literal("list")
+			.executes(context -> listMemos(context.getSource(), memoManager, false))
+			.then(CommandManager.literal("cmd")
+				.executes(context -> listMemos(context.getSource(), memoManager, true))));
+		memoRoot.then(CommandManager.literal("style")
+			.then(CommandManager.argument("value", IntegerArgumentType.integer(1, 3))
+				.executes(context -> setStyle(
+					context.getSource(),
+					memoManager,
+					IntegerArgumentType.getInteger(context, "value")
+				))));
+		memoRoot.then(CommandManager.argument("shortcut", StringArgumentType.word())
+			// cmd など補完に表示させたくないショートカット入力を処理する
+			.suggests((context, builder) -> CompletableFuture.completedFuture(builder.build()))
+			.executes(context -> handleShortcut(
+				context.getSource(),
+				memoManager,
+				StringArgumentType.getString(context, "shortcut")
+			)));
+
+		dispatcher.register(memoRoot);
 	}
 
 	/**
-	 * プレイヤー切断時に編集セッションを確実に破棄してリークを防ぐ。
+	 * プレイヤーがログアウトした際に進行中の編集セッションを確実に破棄する。
 	 */
 	private static void ensureSessionCleanupHook() {
 		if (cleanupRegistered) {
@@ -98,6 +110,17 @@ public final class MemoCommand {
 		}
 		Text result = manager.addMemo(input.command(), input.note(), "");
 		return sendFeedback(context.getSource(), result);
+	}
+
+	private static int handleShortcut(ServerCommandSource source, MemoManager manager, String token) {
+		// cmd 入力時のみコマンドメモ一覧を開き、それ以外はエラーを返す
+		if ("cmd".equalsIgnoreCase(token)) {
+			return listMemos(source, manager, true);
+		}
+		return sendFeedback(
+			source,
+			Text.translatable("command.utility-toolkit.memo.invalid_command").formatted(Formatting.RED)
+		);
 	}
 
 	private static int removeMemo(CommandContext<ServerCommandSource> context, MemoManager manager) {

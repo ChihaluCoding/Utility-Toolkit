@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import chihalu.building.support.BuildingSupport;
 import chihalu.building.support.config.BuildingSupportConfig;
@@ -34,6 +35,14 @@ import chihalu.building.support.storage.SavedStack;
 
 public final class HistoryManager {
 	private static final HistoryManager INSTANCE = new HistoryManager();
+	static {
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			try {
+				INSTANCE.shutdown();
+			} catch (Exception ignored) {
+			}
+		}, "UtilityToolkit-HistoryShutdown"));
+	}
 	private static final int MAX_HISTORY = 64;
 	private static final String DEFAULT_WORLD_KEY = "unknown_world";
 	private static final String ALL_WORLD_FILE_NAME = "all_world.json";
@@ -51,6 +60,7 @@ public final class HistoryManager {
 		thread.setDaemon(true);
 		return thread;
 	});
+	private final AtomicBoolean executorShutdown = new AtomicBoolean(false);
 	// 全ワールド履歴をキャッシュして繰り返しのディスクI/Oを避ける
 	private final Object globalCacheLock = new Object();
 	private Deque<SavedStack> globalHistoryCache = new ArrayDeque<>();
@@ -62,6 +72,12 @@ public final class HistoryManager {
 
 	public static HistoryManager getInstance() {
 		return INSTANCE;
+	}
+
+	public void shutdown() {
+		if (executorShutdown.compareAndSet(false, true)) {
+			ioExecutor.shutdown();
+		}
 	}
 
 	public synchronized void initialize() {
@@ -96,14 +112,20 @@ public final class HistoryManager {
 	}
 
 	public synchronized List<ItemStack> getDisplayStacksForTab() {
-		Deque<SavedStack> source = getHistoryEntriesForDisplay();
 		List<ItemStack> stacks = new ArrayList<>();
-		for (SavedStack saved : source) {
-			ItemStack stack = saved.toItemStack();
-			if (!stack.isEmpty()) {
-				stack.setCount(1);
-				stacks.add(stack);
+		for (SavedStack saved : getHistoryEntriesForDisplay()) {
+			if (saved == null) {
+				continue;
 			}
+			ItemStack stack = saved.toItemStack();
+			if (stack.isEmpty()) {
+				continue;
+			}
+			stack.setCount(1);
+			if (containsStack(stacks, stack)) {
+				continue;
+			}
+			stacks.add(stack);
 		}
 		if (stacks.isEmpty()) {
 			stacks.add(new ItemStack(Items.BOOK));
@@ -112,15 +134,8 @@ public final class HistoryManager {
 	}
 
 	public synchronized ItemStack getIconStack() {
-		Deque<SavedStack> source = getHistoryEntriesForDisplay();
-		for (SavedStack saved : source) {
-			ItemStack stack = saved.toItemStack();
-			if (!stack.isEmpty()) {
-				stack.setCount(1);
-				return stack;
-			}
-		}
-		return new ItemStack(Items.BOOK);
+		List<ItemStack> displayStacks = getDisplayStacksForTab();
+		return displayStacks.get(0).copy();
 	}
 
 	public synchronized void populate(ItemGroup.Entries entries) {
@@ -144,6 +159,15 @@ public final class HistoryManager {
 			return loadHistory(getGlobalHistoryPath());
 		}
 		return new ArrayDeque<>(recentItems);
+	}
+
+	private static boolean containsStack(List<ItemStack> stacks, ItemStack candidate) {
+		for (ItemStack existing : stacks) {
+			if (ItemStack.areEqual(existing, candidate)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void updateGlobalHistory(SavedStack snapshot) {
@@ -313,8 +337,17 @@ public final class HistoryManager {
 	 * メインスレッドで収集した履歴内容を即座にスナップショットし、I/O専用スレッドで非同期保存する。
 	 */
 	private void saveHistoryAsync(Path path, Deque<SavedStack> deque, String worldKey) {
+		if (executorShutdown.get()) {
+			return;
+		}
 		Deque<SavedStack> snapshot = new ArrayDeque<>(deque);
-		ioExecutor.execute(() -> writeHistorySnapshot(path, snapshot, worldKey));
+		ioExecutor.execute(() -> {
+			try {
+				writeHistorySnapshot(path, snapshot, worldKey);
+			} catch (Exception exception) {
+				BuildingSupport.LOGGER.error("履歴データの保存中にエラーが発生しました: {}", path, exception);
+			}
+		});
 	}
 
 	private void writeHistorySnapshot(Path path, Deque<SavedStack> snapshot, String worldKey) {
@@ -422,7 +455,7 @@ public final class HistoryManager {
 	}
 
 	private static void updateDeque(Deque<SavedStack> deque, SavedStack snapshot) {
-		deque.removeIf(existing -> existing.id().equals(snapshot.id()));
+		deque.removeIf(existing -> existing.isSameStack(snapshot));
 		deque.addFirst(snapshot);
 		while (deque.size() > MAX_HISTORY) {
 			deque.removeLast();

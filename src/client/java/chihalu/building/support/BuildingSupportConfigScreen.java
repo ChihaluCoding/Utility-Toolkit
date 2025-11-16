@@ -82,29 +82,19 @@ public class BuildingSupportConfigScreen extends Screen {
 			.dimensions(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.pick_block_control"),
-			button -> openPickBlockControl())
-			.dimensions(leftX, startY + ROW_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
-			.build());
-
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.spawn"),
 			button -> openSpawn())
-			.dimensions(rightX, startY + ROW_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
+			.dimensions(rightX, startY, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.inventory_control"),
 			button -> openInventoryControl())
-			.dimensions(leftX, startY + ROW_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
+			.dimensions(leftX, startY + ROW_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.optimization"),
 			button -> openOptimization())
-			.dimensions(rightX, startY + ROW_SPACING * 2, BUTTON_WIDTH, BUTTON_HEIGHT)
-			.build());
-
-		addDrawableChild(ButtonWidget.builder(Text.translatable("config.utility-toolkit.category.world_settings"),
-			button -> openWorldSettings())
-			.dimensions(leftX, startY + ROW_SPACING * 3, BUTTON_WIDTH, BUTTON_HEIGHT)
+			.dimensions(rightX, startY + ROW_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT)
 			.build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> close())
@@ -773,4 +763,3 @@ public class BuildingSupportConfigScreen extends Screen {
 		}
 	}
 }
-
